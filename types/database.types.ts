@@ -266,6 +266,32 @@ export type Database = {
           },
         ]
       }
+      sale_reference_counters: {
+        Row: {
+          next_value: number
+          org_id: string
+          year: number
+        }
+        Insert: {
+          next_value?: number
+          org_id: string
+          year: number
+        }
+        Update: {
+          next_value?: number
+          org_id?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sale_reference_counters_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sales: {
         Row: {
           customer_id: string | null
@@ -530,6 +556,10 @@ export type Database = {
     }
     Functions: {
       complete_sale: { Args: { p_sale_id: string }; Returns: undefined }
+      create_organisation_and_profile: {
+        Args: { p_full_name: string; p_org_name: string }
+        Returns: string
+      }
       current_org_id: { Args: never; Returns: string }
       current_user_role: {
         Args: never
