@@ -4,26 +4,13 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
+import { formatMoney } from "@/lib/format";
 import { getCurrentProfile } from "@/lib/queries/profile";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Dashboard | Oja",
 };
-
-// Formats in the organisation's own currency. Wrapped because the currency code
-// comes from the database, and Intl throws a RangeError on an invalid one
-// rather than degrading.
-function formatMoney(amount: number, currency: string): string {
-  try {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency,
-    }).format(amount);
-  } catch {
-    return `${currency} ${amount.toFixed(2)}`;
-  }
-}
 
 interface KpiTileProps {
   label: string;
