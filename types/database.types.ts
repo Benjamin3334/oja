@@ -250,7 +250,21 @@ export type Database = {
             foreignKeyName: "sale_items_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "v_product_performance"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "sale_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "v_product_stock"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "sale_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "v_stock_valuation"
             referencedColumns: ["product_id"]
           },
           {
@@ -420,7 +434,21 @@ export type Database = {
             foreignKeyName: "stock_movements_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "v_product_performance"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "stock_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "v_product_stock"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "stock_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "v_stock_valuation"
             referencedColumns: ["product_id"]
           },
           {
@@ -489,6 +517,37 @@ export type Database = {
           },
         ]
       }
+      v_product_performance: {
+        Row: {
+          category_id: string | null
+          cost_of_goods: number | null
+          gross_margin: number | null
+          last_sold_at: string | null
+          lines_without_cost: number | null
+          name: string | null
+          org_id: string | null
+          product_id: string | null
+          revenue: number | null
+          sku: string | null
+          units_sold: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       v_product_stock: {
         Row: {
           category_id: string | null
@@ -512,6 +571,24 @@ export type Database = {
           },
           {
             foreignKeyName: "products_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_revenue_by_day: {
+        Row: {
+          day: string | null
+          items_sold: number | null
+          org_id: string | null
+          revenue: number | null
+          sale_count: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "organisations"
@@ -552,6 +629,35 @@ export type Database = {
             columns: ["sold_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_stock_valuation: {
+        Row: {
+          category_id: string | null
+          category_name: string | null
+          cost_price: number | null
+          name: string | null
+          org_id: string | null
+          product_id: string | null
+          sku: string | null
+          stock_quantity: number | null
+          stock_value: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
             referencedColumns: ["id"]
           },
         ]
