@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 
 import { formatMoney } from "@/lib/format";
 import { getCurrentProfile } from "@/lib/queries/profile";
+import { getTodayFigures } from "@/lib/queries/sales";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
@@ -104,16 +105,28 @@ export default async function DashboardPage() {
 
   const currency = profile.organisation.currency;
 
+  // Migration 0008 scopes sales by sold_by, so these figures are this
+  // person takings for a staff member and the whole shop for an owner.
+  // The caption below says which, rather than letting the number imply.
+  const figures = await getTodayFigures();
+  const isStaff = profile.role === "staff";
+
   return (
     <div className="flex flex-col gap-6">
       <h1 className="font-display text-display text-ink">Dashboard</h1>
 
-      {/* FR-2.1: four KPI tiles. Zeros until the queries land. */}
+      {/* FR-2.1: four KPI tiles. */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiTile label="Revenue today" value={formatMoney(0, currency)} />
-        <KpiTile label="Sales today" value="0" />
-        <KpiTile label="Items sold today" value="0" />
-        <KpiTile label="Low stock" value="0" />
+        <KpiTile
+          label={isStaff ? "Your revenue today" : "Revenue today"}
+          value={formatMoney(figures.revenue, currency)}
+        />
+        <KpiTile
+          label={isStaff ? "Your sales today" : "Sales today"}
+          value={String(figures.saleCount)}
+        />
+        <KpiTile label="Items sold today" value={String(figures.itemsSold)} />
+        <KpiTile label="Low stock" value={String(figures.lowStockCount)} />
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
