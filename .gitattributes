@@ -1,0 +1,4 @@
+# Normalise line endings: LF in the repository on every platform.
+# Without this, Windows checkouts commit CRLF and every file shows as fully
+# modified when the repo is opened on another machine or in CI.
+* text=auto eol=lf
