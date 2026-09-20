@@ -1,17 +1,17 @@
 -- ============================================================================
--- OJA — Small Business & Institution Operations System
+-- OJA - Small Business & Institution Operations System
 -- Database schema for Supabase (PostgreSQL 15)
--- Author: Benjamin John Abakasanga — SIWES Capstone
+-- Author: Benjamin John Abakasanga - SIWES Capstone
 --
 -- HOW TO RUN
---   1. Supabase Dashboard → SQL Editor → New query
---   2. Paste sections 1–7 and Run. (Section 8 = seed data, run after you have
+--   1. Supabase Dashboard -> SQL Editor -> New query
+--   2. Paste sections 1-7 and Run. (Section 8 = seed data, run after you have
 --      created your first user account through the app.)
 --   3. Section 9 contains reference queries for the demo. Do not run blindly.
 --
 -- READ THIS FIRST (defence note): everything below is normalised to 3NF.
 -- Where a value looks duplicated (sale_items.unit_price) it is a deliberate
--- HISTORICAL SNAPSHOT, not redundancy — see the comment on that column.
+-- HISTORICAL SNAPSHOT, not redundancy - see the comment on that column.
 -- ============================================================================
 
 
@@ -136,7 +136,7 @@ create index idx_sales_customer on sales(customer_id);
 
 comment on column sales.customer_id is
     'Nullable on purpose: a walk-in sale has no customer. The relationship is
-     OPTIONAL one-to-many (one customer → many sales).';
+     OPTIONAL one-to-many (one customer to many sales).';
 
 
 -- ------------------------------------------------------------ sale_items --
@@ -163,7 +163,7 @@ create index idx_sale_items_product on sale_items(product_id);
 
 comment on column sale_items.unit_price is
     'HISTORICAL SNAPSHOT. This is what the customer actually paid on that day.
-     It is not a copy of products.unit_price — it is a different fact that
+     It is not a copy of products.unit_price - it is a different fact that
      happens to share the value at the moment of sale. Storing it is what makes
      old receipts reproducible after a price change.';
 
@@ -207,9 +207,9 @@ language sql
 stable
 security definer
 set search_path = public
-as $$
+as $fn_current_org_id$
     select org_id from public.profiles where id = auth.uid();
-$$;
+$fn_current_org_id$;
 
 create or replace function current_user_role()
 returns user_role
@@ -217,20 +217,20 @@ language sql
 stable
 security definer
 set search_path = public
-as $$
+as $fn_current_user_role$
     select role from public.profiles where id = auth.uid();
-$$;
+$fn_current_user_role$;
 
 -- Keeps products.updated_at honest.
 create or replace function set_updated_at()
 returns trigger
 language plpgsql
-as $$
+as $fn_set_updated_at$
 begin
     new.updated_at := now();
     return new;
 end;
-$$;
+$fn_set_updated_at$;
 
 create trigger trg_products_updated_at
     before update on products
@@ -242,9 +242,9 @@ create trigger trg_products_updated_at
 -- ============================================================================
 
 -- Current stock per product = sum of the ledger.
---   in         → +quantity
---   out        → -quantity
---   adjustment → +quantity (already signed)
+--   in         -> +quantity
+--   out        -> -quantity
+--   adjustment -> +quantity (already signed)
 create or replace view v_product_stock as
 select
     p.id            as product_id,
@@ -316,7 +316,7 @@ create or replace function complete_sale(p_sale_id uuid)
 returns void
 language plpgsql
 security invoker            -- still subject to RLS: you cannot touch another org
-as $$
+as $fn_complete_sale$
 declare
     item        record;
     available   integer;
@@ -349,7 +349,7 @@ begin
        set status = 'completed', sold_at = now()
      where id = p_sale_id;
 end;
-$$;
+$fn_complete_sale$;
 
 
 -- 5.2 Voiding a sale never deletes anything. It writes COMPENSATING movements
@@ -358,7 +358,7 @@ create or replace function void_sale(p_sale_id uuid, p_reason text)
 returns void
 language plpgsql
 security invoker
-as $$
+as $fn_void_sale$
 declare
     item  record;
     v_org uuid;
@@ -384,7 +384,7 @@ begin
 
     update sales set status = 'void', note = coalesce(p_reason, note) where id = p_sale_id;
 end;
-$$;
+$fn_void_sale$;
 
 
 -- 5.3 Generate the next human-readable sale reference for an organisation.
@@ -392,13 +392,13 @@ create or replace function next_sale_reference(p_org_id uuid)
 returns text
 language sql
 stable
-as $$
+as $fn_next_sale_reference$
     select 'SA-' || to_char(now(), 'YYYY') || '-' ||
            lpad((count(*) + 1)::text, 4, '0')
     from sales
     where org_id = p_org_id
       and date_part('year', sold_at) = date_part('year', now());
-$$;
+$fn_next_sale_reference$;
 
 
 -- ============================================================================
@@ -489,7 +489,7 @@ create policy movements_insert on stock_movements
 
 
 -- ============================================================================
--- 7. SIGN-UP HOOK — give every new auth user a profile
+-- 7. SIGN-UP HOOK - give every new auth user a profile
 --    (Run once. Adjust if you prefer to create profiles from the app.)
 -- ============================================================================
 -- NOTE: this leaves org_id null; the app's onboarding screen sets it when the
@@ -500,7 +500,7 @@ create policy movements_insert on stock_movements
 -- ============================================================================
 -- 8. SEED DATA (demo)
 --    Run AFTER you have signed up once, then replace <YOUR_AUTH_UID> with the
---    id from Supabase → Authentication → Users.
+--    id from Supabase -> Authentication -> Users.
 -- ============================================================================
 /*
 insert into organisations (id, name, slug, currency)
@@ -534,7 +534,7 @@ insert into customers (org_id, full_name, phone) values
 
 
 -- ============================================================================
--- 9. REFERENCE QUERIES — rehearse these; the examiner may ask you to write one
+-- 9. REFERENCE QUERIES - rehearse these; the examiner may ask you to write one
 -- ============================================================================
 
 -- 9.1 SELECT with WHERE and ORDER BY: active products, most expensive first
