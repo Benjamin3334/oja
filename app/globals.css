@@ -60,6 +60,10 @@
     /* ---- Spacing scale, 4px base. The PRD is explicit: "Nothing in
             between." The step names match Tailwind's own numbering, so p-4
             is 16px exactly as a Tailwind reader expects. ------------------ */
+    /* Zero is not a step BETWEEN 4 and 8; it is the absence of spacing. It
+       has to exist or p-0, m-0, gap-0 and min-w-0 do not compile, and
+       min-w-0 is what lets a flex child shrink below its content width. */
+    --space-0: 0px;
     --space-1: 4px;
     --space-2: 8px;
     --space-3: 12px;
@@ -120,6 +124,7 @@
        than a comment, because p-5 and p-7 then do not exist at all. */
     --spacing: initial;
     --spacing-*: initial;
+    --spacing-0: var(--space-0);
     --spacing-1: var(--space-1);
     --spacing-2: var(--space-2);
     --spacing-3: var(--space-3);
