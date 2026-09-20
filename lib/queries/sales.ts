@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import type { PaymentMethod } from "@/lib/validation/sales";
+import type { PaymentMethod } from "@/lib/payment-methods";
 
 // EVERY QUERY IN THIS FILE IS ROLE-DEPENDENT.
 // Migration 0008 scopes the sales policy by sold_by: an owner or manager sees

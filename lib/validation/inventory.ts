@@ -1,5 +1,12 @@
 import { z } from "zod";
 
+// Identifiers are validated with z.guid(), not z.uuid(). Zod 4 makes z.uuid()
+// check the RFC 4122 version and variant nibbles, but the Postgres uuid type
+// stores any 128-bit value and enforces neither - the seeded ids in 0001, such
+// as 22222222-0000-0000-0000-000000000001, are real rows that z.uuid() rejects.
+// Validating a format the column does not guarantee makes the app refuse its
+// own data, so the check is the shape only.
+
 // One definition of the inventory rules, parsed by both the forms and the
 // Server Actions so they cannot drift.
 //
@@ -33,7 +40,7 @@ export const productSchema = z.object({
     .min(1, { error: "Enter a SKU." })
     .max(SKU_MAX, { error: `SKU must be ${SKU_MAX} characters or fewer.` }),
   // Empty string means "no category". The column is nullable.
-  categoryId: z.union([z.literal(""), z.uuid({ error: "Choose a valid category." })]),
+  categoryId: z.union([z.literal(""), z.guid({ error: "Choose a valid category." })]),
   unitPrice: money("Selling price"),
   costPrice: money("Cost price"),
   reorderLevel: z.coerce
@@ -45,7 +52,7 @@ export const productSchema = z.object({
 // FR-3.4. A receipt is always a positive quantity; the reason explains where
 // the goods came from.
 export const receiveStockSchema = z.object({
-  productId: z.uuid(),
+  productId: z.guid({ error: "Something went wrong. Reload the page and try again." }),
   quantity: z.coerce
     .number({ error: "Quantity must be a number." })
     .int({ error: "Quantity must be a whole number." })
@@ -61,7 +68,7 @@ export const receiveStockSchema = z.object({
 // chk_movement_quantity rejects that. The reason is mandatory here and in the
 // database since migration 0010.
 export const adjustStockSchema = z.object({
-  productId: z.uuid(),
+  productId: z.guid({ error: "Something went wrong. Reload the page and try again." }),
   quantity: z.coerce
     .number({ error: "Quantity must be a number." })
     .int({ error: "Quantity must be a whole number." })

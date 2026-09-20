@@ -1,12 +1,13 @@
 import { z } from "zod";
 
-// Mirrors the payment_method enum in 0001. An enum models a closed domain, so
-// the list here is not a convenience copy: if the database ever gains a value
-// and this does not, the form silently stops offering it, which is the failure
-// mode worth knowing about.
-export const PAYMENT_METHODS = ["cash", "transfer", "card", "credit"] as const;
+import { PAYMENT_METHODS } from "@/lib/payment-methods";
 
-export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
+// Identifiers are validated with z.guid(), not z.uuid(). Zod 4 makes z.uuid()
+// check the RFC 4122 version and variant nibbles, but the Postgres uuid type
+// stores any 128-bit value and enforces neither - the seeded ids in 0001, such
+// as 22222222-0000-0000-0000-000000000001, are real rows that z.uuid() rejects.
+// Validating a format the column does not guarantee makes the app refuse its
+// own data, so the check is the shape only.
 
 // sale_status is deliberately absent. Since 0009 and 0011 the client cannot
 // write it at all - it is set by create_draft_sale, complete_sale and
@@ -14,7 +15,7 @@ export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
 export const startSaleSchema = z.object({
   // Empty string means a walk-in. customers.id is nullable on sales for
   // exactly this case (FR-4.2).
-  customerId: z.union([z.literal(""), z.uuid({ error: "Choose a valid customer." })]),
+  customerId: z.union([z.literal(""), z.guid({ error: "Choose a valid customer." })]),
   paymentMethod: z.enum(PAYMENT_METHODS, {
     error: "Choose how the customer is paying.",
   }),
@@ -22,8 +23,8 @@ export const startSaleSchema = z.object({
 });
 
 export const saleLineSchema = z.object({
-  saleId: z.uuid(),
-  productId: z.uuid(),
+  saleId: z.guid({ error: "Something went wrong. Reload the page and try again." }),
+  productId: z.guid({ error: "Choose a product." }),
   quantity: z.coerce
     .number({ error: "Quantity must be a number." })
     .int({ error: "Quantity must be a whole number." })
@@ -33,7 +34,7 @@ export const saleLineSchema = z.object({
 // FR-4.7. A void is permanent and restores stock, so the reason is not
 // optional: it is the only record of why the sale was reversed.
 export const voidSaleSchema = z.object({
-  saleId: z.uuid(),
+  saleId: z.guid({ error: "Something went wrong. Reload the page and try again." }),
   reason: z
     .string()
     .trim()
