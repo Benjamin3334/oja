@@ -63,3 +63,30 @@ export async function getCurrentProfile(
     },
   };
 }
+
+// Convenience for Server Components and Server Actions that need the signed-in
+// user's profile and do not already hold the user id. Verifies the token rather
+// than reading the cookie, the same way the shell guard does.
+export async function getSignedInProfile(): Promise<CurrentProfile | null> {
+  const supabase = await createClient();
+
+  const { data } = await supabase.auth.getClaims();
+  const userId = data?.claims?.sub;
+
+  if (typeof userId !== "string") {
+    return null;
+  }
+
+  return getCurrentProfile(userId);
+}
+
+// PRD section 9.2: creating and editing products, receiving stock and making
+// adjustments are owner and manager only. Staff read inventory, because they
+// need prices at the till.
+//
+// This is the UI half of the rule. The database half is migration 0003, which
+// restricts direct stock_movements inserts to the same two roles. Section 9.1
+// principle 3: hiding a button is not access control, so both exist.
+export function canManageInventory(role: CurrentProfile["role"]): boolean {
+  return role === "owner" || role === "manager";
+}
