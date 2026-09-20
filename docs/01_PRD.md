@@ -173,7 +173,7 @@ Oja
 | ID | Requirement | Acceptance criteria |
 |---|---|---|
 | FR-7.1 | Revenue by day/week/month with date-range filter | Driven by SQL aggregation, not client-side loops |
-| FR-7.2 | Product performance: units sold, revenue, gross margin | Margin = revenue − (units × cost price) |
+| FR-7.2 | Product performance: units sold, revenue, gross margin | Margin = revenue - (units x the product’s **current** cost price). This is an indicative figure, not a historical one: unlike `unit_price`, cost is not snapshotted onto `sale_items`, so a later change to a supplier price silently restates past margins. Accepted deliberately for the MVP - snapshotting `unit_cost` was scoped and cut. Be ready to state the trade-off, because it is the obvious follow-up to the snapshot argument in section 6.2. |
 | FR-7.3 | Stock valuation: Σ (stock × cost price) | Single figure plus per-category breakdown |
 | FR-7.4 | Export current view to CSV | File downloads with correct headers |
 
