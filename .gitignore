@@ -46,3 +46,6 @@ next-env.d.ts
 # Defensive: catches a credentials file saved without the leading dot.
 env.local
 env*.local
+
+# Supabase CLI scratch state (project ref, linked-project metadata).
+supabase/.temp/
