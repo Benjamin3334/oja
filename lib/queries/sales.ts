@@ -153,46 +153,49 @@ export interface TodayFigures {
   lowStockCount: number;
 }
 
-// FR-2.1. Summed in JavaScript rather than in SQL because PostgREST cannot
-// aggregate across a nested relation, and at MVP scale a day of sales is a
-// small number of rows. If that stops being true the answer is a view, not a
-// loop over pages.
+// Lagos is UTC+1 all year: Nigeria has observed no daylight saving since 1945,
+// so a fixed offset is correct here rather than a lurking bug. Intl would be
+// the answer for a zone that shifts.
+const LAGOS_OFFSET_MINUTES = 60;
+
+// Which calendar day it is IN LAGOS, as YYYY-MM-DD. Only the choice of day is
+// made here; what a day means is decided by v_revenue_by_day, which truncates
+// at the Lagos boundary in SQL. Keeping the definition in one place is the
+// point - the previous version built a UTC midnight window in JavaScript and
+// counted every sale made between 00:00 and 01:00 Lagos into the day before.
+function lagosToday(now: Date = new Date()): string {
+  const shifted = new Date(now.getTime() + LAGOS_OFFSET_MINUTES * 60_000);
+  return shifted.toISOString().slice(0, 10);
+}
+
+// FR-2.1.
 export async function getTodayFigures(): Promise<TodayFigures> {
   const supabase = await createClient();
 
-  const startOfDay = new Date();
-  startOfDay.setHours(0, 0, 0, 0);
-
-  const [salesResult, lowStockResult] = await Promise.all([
+  const [todayResult, lowStockResult] = await Promise.all([
     supabase
-      .from("sales")
-      .select("id, sale_items ( quantity, line_total )")
-      .eq("status", "completed")
-      .gte("sold_at", startOfDay.toISOString()),
+      .from("v_revenue_by_day")
+      .select("revenue, sale_count, items_sold")
+      .eq("day", lagosToday())
+      .maybeSingle(),
     supabase
       .from("v_low_stock")
       .select("product_id", { count: "exact", head: true }),
   ]);
 
-  if (salesResult.error) {
-    console.error("[queries.getTodayFigures]", salesResult.error.message);
+  if (todayResult.error) {
+    console.error("[queries.getTodayFigures]", todayResult.error.message);
   }
 
   if (lowStockResult.error) {
     console.error("[queries.getTodayFigures.lowStock]", lowStockResult.error.message);
   }
 
-  const sales = salesResult.data ?? [];
-
+  // No row means no completed sales today, which is zero rather than an error.
   return {
-    revenue: sales.reduce((total, sale) => total + sumLines(sale.sale_items), 0),
-    saleCount: sales.length,
-    itemsSold: sales.reduce(
-      (total, sale) =>
-        total +
-        (sale.sale_items ?? []).reduce((count, line) => count + line.quantity, 0),
-      0
-    ),
+    revenue: todayResult.data?.revenue ?? 0,
+    saleCount: todayResult.data?.sale_count ?? 0,
+    itemsSold: todayResult.data?.items_sold ?? 0,
     lowStockCount: lowStockResult.count ?? 0,
   };
 }
