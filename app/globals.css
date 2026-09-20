@@ -73,6 +73,16 @@
     --space-12: 48px;
     --space-16: 64px;
 
+    /* ---- Component dimensions (section 8.3). Deliberately NOT spacing
+            steps: these are fixed sizes the design system specifies for
+            controls, rows and panels, and they are referenced as
+            h-[var(--control-h)] rather than written as literals. */
+    --control-h: 36px;          /* buttons, inputs, selects */
+    --control-h-touch: 44px;    /* the same controls on touch */
+    --row-h: 44px;              /* table rows */
+    --sidebar-w: 240px;
+    --dialog-max-w: 480px;
+
     /* ---- Font stacks ------------------------------------------------------
             --font-instrument-serif, --font-geist and --font-jetbrains-mono are
             supplied by next/font from app/layout.tsx. Until that file is
