@@ -1,0 +1,70 @@
+-- ============================================================================
+-- 0002 - Run the reporting views as the invoking user so that RLS applies.
+--
+-- THE BUG
+--   A PostgreSQL view does not execute as the person querying it. It executes
+--   with the privileges of the role that OWNS the view. That is deliberate and
+--   long-standing: it is how a view can expose a filtered slice of a table the
+--   caller has no rights to read directly.
+--
+--   Row-level security follows the same rule. Policies on the base tables are
+--   evaluated against the view's owner, not the caller.
+--
+--   Three facts then combine badly:
+--     1. 0001 was applied through the SQL editor, which runs as `postgres`,
+--        so `postgres` owns all four views.
+--     2. `postgres` also owns products, stock_movements, sales and sale_items.
+--     3. A table's owner is EXEMPT from row-level security on that table
+--        unless `alter table ... force row level security` is set. 0001 does
+--        not set it.
+--
+--   So the policies were evaluated as postgres, postgres ignored them, and the
+--   views returned every organisation's rows to any authenticated user.
+--   Supabase grants select on new public views to `authenticated` by default,
+--   and the views carry org_id as a column but have no WHERE clause of their
+--   own, so nothing else stopped it.
+--
+-- THE MEASURED FAILURE (before this migration)
+--   Running as `authenticated` with no JWT, so current_org_id() is null and no
+--   row should match:
+--       rows_via_base_table = 0      <- correct, RLS applied
+--       rows_via_view       = 5      <- wrong, all seeded products returned
+--   See supabase/paste-chunks/10_rls_leak_proof.sql.
+--
+--   This contradicts PRD goal G5, section 9.1 principle 1, and the success
+--   metric "Cross-organisation data leakage in testing: 0 rows". The dashboard
+--   low-stock panel (FR-2.4), the revenue chart (FR-2.2) and stock valuation
+--   (FR-7.3) all read through these views.
+--
+-- THE FIX
+--   PostgreSQL 15 added the `security_invoker` view option. With it enabled,
+--   base-table permission checks and RLS policies are evaluated against the
+--   user running the query rather than the view's owner. It defaults to off
+--   for backward compatibility, so it has to be asked for explicitly.
+--   This project runs PostgreSQL 17, so the option is available.
+--
+--   v_low_stock selects FROM v_product_stock, so both need the option. The
+--   check is applied at every level of a view chain, and leaving one level
+--   without it would reopen the hole.
+--
+-- WHY ALTER RATHER THAN RECREATE
+--   It is the smallest change that fixes the defect, it leaves 0001 untouched,
+--   and a rebuild from empty still works: 0001 creates the views, 0002 turns
+--   the option on, and the folder replays in filename order as required by
+--   02_CLAUDE.md section 5.1.
+--
+-- VERIFY AFTER RUNNING
+--   Re-run supabase/paste-chunks/10_rls_leak_proof.sql. Both columns must read
+--   0. Keep that script: it is the RLS regression test.
+--
+-- NOT DONE HERE (separate concern, separate migration)
+--   The underlying reason postgres ignored the policies is that table owners
+--   are exempt from RLS. `alter table ... force row level security` would
+--   close that at the table level too, but it needs testing against
+--   complete_sale() first.
+-- ============================================================================
+
+alter view v_product_stock set (security_invoker = true);
+alter view v_low_stock     set (security_invoker = true);
+alter view v_daily_sales   set (security_invoker = true);
+alter view v_sale_totals   set (security_invoker = true);
