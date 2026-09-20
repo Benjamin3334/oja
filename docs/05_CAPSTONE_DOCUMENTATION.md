@@ -15,7 +15,7 @@ Section 5.4 of the training plan requires seven documentation artefacts. This ta
 | 1 | Network diagram | `04_NETWORK_DESIGN.md` §7 + §2 of this document | ☐ |
 | 2 | IP addressing table | `04_NETWORK_DESIGN.md` §5 | ☐ |
 | 3 | Database ERD | `01_PRD.md` §6.1 + §3 of this document | ☐ |
-| 4 | SQL scripts | `03_schema.sql` (DDL, views, functions, policies, queries §9) | ☐ |
+| 4 | SQL scripts | `0001_initial_schema.sql` (DDL, views, functions, policies, queries §9) | ☐ |
 | 5 | Application screenshots | §4 of this document | ☐ |
 | 6 | Explanation of how AI was used at each stage | §6 of this document | ☐ |
 | 7 | Problems encountered and how they were resolved | §7 of this document | ☐ |
@@ -61,7 +61,7 @@ Full detail in `04_NETWORK_DESIGN.md`. In brief:
 
 ## 3. Database design (summary)
 
-Full DDL in `03_schema.sql`; ERD in `01_PRD.md` §6.1.
+Full DDL in `0001_initial_schema.sql`; ERD in `01_PRD.md` §6.1.
 
 **Eight tables:** `organisations`, `profiles`, `categories`, `products`, `customers`, `sales`, `sale_items`, `stock_movements`.
 
@@ -237,7 +237,7 @@ See `07_DEFENSE_QUIZ.md`. If you do not know an answer: **"I did not implement t
 
 **Ten minutes before**
 - [ ] Log in already done, dashboard open in tab 1
-- [ ] Tab 2: ERD · Tab 3: IP addressing table · Tab 4: `03_schema.sql`
+- [ ] Tab 2: ERD · Tab 3: IP addressing table · Tab 4: `0001_initial_schema.sql`
 - [ ] Laptop on mains power, screen sleep disabled
 
 **Never do on stage**

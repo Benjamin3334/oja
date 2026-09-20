@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 // TEMPORARY TYPES. 02_CLAUDE.md section 5.4 requires row types to come from
 // types/database.types.ts and forbids hand-written row interfaces. That file
 // cannot be generated yet: the Supabase project is still empty, because
-// supabase/migrations/03_schema.sql has not been run against it. Generation
+// supabase/migrations/0001_initial_schema.sql has not been run against it. Generation
 // succeeds but returns no tables. Once the schema is applied, run
 //
 //   npx supabase gen types typescript --project-id <ref> > types/database.types.ts
