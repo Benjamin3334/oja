@@ -559,6 +559,14 @@ export type Database = {
     }
     Functions: {
       complete_sale: { Args: { p_sale_id: string }; Returns: undefined }
+      create_draft_sale: {
+        Args: {
+          p_customer_id?: string
+          p_note?: string
+          p_payment_method?: Database["public"]["Enums"]["payment_method"]
+        }
+        Returns: string
+      }
       create_organisation_and_profile: {
         Args: { p_full_name: string; p_org_name: string }
         Returns: string
