@@ -1,4 +1,5 @@
 import { createBrowserClient } from "@supabase/ssr";
+import { SUPABASE_ANON_KEY, SUPABASE_URL } from "./env";
 
 // Browser client, for Client Components only.
 //
@@ -10,7 +11,7 @@ import { createBrowserClient } from "@supabase/ssr";
 // function repeatedly does not create repeated connections.
 export function createClient() {
   return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
   );
 }
