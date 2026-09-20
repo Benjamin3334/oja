@@ -1,26 +1,247 @@
 @import "tailwindcss";
 
+/* ============================================================================
+   OJA — "Quiet Instrument" design tokens
+   Source of truth: docs/01_PRD.md section 8.2. Component rules: section 8.3.
+
+   HOW THIS FILE IS ORGANISED
+     1. :root          every literal value, written exactly once.
+     2. @theme inline  maps those variables into Tailwind's namespaces so that
+                       utilities resolve to the SAME variable. `inline` is the
+                       important word: Tailwind inlines var(--canvas) into the
+                       utility rather than minting a second copy of the value.
+     3. @layer base    document defaults.
+     4. @utility       the few composite utilities the design system needs.
+
+   No value is written twice. To change a colour, a spacing step or a type
+   size, edit its :root entry and every utility follows automatically.
+   ============================================================================ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+    /* ---- Canvas & surface ------------------------------------------------ */
+    --canvas: #FBFAF8;              /* warm paper, deliberately not pure white */
+    --surface: #FFFFFF;
+    --surface-sunk: #F4F2EE;
+
+    /* ---- Ink ------------------------------------------------------------- */
+    --ink: #16150F;                 /* near-black, warm */
+    --ink-muted: #6C6A60;
+    --ink-faint: #9B988D;
+
+    /* ---- Lines ----------------------------------------------------------- */
+    --hairline: #E7E4DC;
+    --hairline-strong: #D6D2C7;
+
+    /* ---- Accent: the primary action and the active nav item ONLY --------- */
+    --accent: #1B4D3E;
+    --accent-hover: #163F33;
+    --accent-soft: #E8F0EC;
+
+    /* ---- Semantic -------------------------------------------------------- */
+    --positive: #2F6F4E;
+    --warning: #9A6B12;
+    --danger: #A23B36;
+
+    /* ---- Radius ---------------------------------------------------------- */
+    --r-sm: 6px;
+    --r-md: 10px;
+    --r-lg: 14px;
+    --r-pill: 999px;
+
+    /* ---- Elevation: dialogs and popovers only. Everything else uses a
+            hairline border instead of a shadow (section 8.3). ------------- */
+    --e-popover: 0 8px 24px -8px rgb(22 21 15 / 0.14),
+                 0 2px 6px -2px rgb(22 21 15 / 0.08);
+
+    /* ---- Motion ---------------------------------------------------------- */
+    --dur: 160ms;
+    --ease: cubic-bezier(0.2, 0, 0, 1);
+
+    /* ---- Spacing scale, 4px base. The PRD is explicit: "Nothing in
+            between." The step names match Tailwind's own numbering, so p-4
+            is 16px exactly as a Tailwind reader expects. ------------------ */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-12: 48px;
+    --space-16: 64px;
+
+    /* ---- Font stacks ------------------------------------------------------
+            --font-instrument-serif, --font-geist and --font-jetbrains-mono are
+            supplied by next/font from app/layout.tsx. Until that file is
+            written they are simply undefined, and each stack falls through to
+            its fallbacks, so this stylesheet is valid on its own.
+            Only the three specified families appear below; none of the
+            typefaces banned by section 5.3 are named. ---------------------- */
+    --stack-display: var(--font-instrument-serif), "Iowan Old Style",
+                     "Palatino Linotype", Palatino, Georgia, serif;
+    --stack-ui: var(--font-geist), system-ui, -apple-system, "Segoe UI",
+                sans-serif;
+    --stack-numeric: var(--font-jetbrains-mono), ui-monospace, "SF Mono",
+                     "Cascadia Mono", Consolas, monospace;
+
+    /* ---- Type scale (section 8.2) ---------------------------------------- */
+    --size-display: 34px;   --lh-display: 40px;   --weight-display: 400;
+    --size-title: 20px;     --lh-title: 28px;     --weight-title: 560;
+    --size-body: 15px;      --lh-body: 22px;      --weight-body: 400;
+    --size-label: 13px;     --lh-label: 18px;     --weight-label: 500;
+    --size-caption: 12px;   --lh-caption: 16px;   --weight-caption: 400;
+    --size-numeric: 14px;   --lh-numeric: 20px;   --weight-numeric: 400;
+
+    --tracking-label: 0.01em;
 }
+
+/* ============================================================================
+   Expose the tokens to Tailwind. Every entry is a reference, never a literal.
+   ============================================================================ */
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+    /* Colours: bg-canvas, text-ink-muted, border-hairline, ... */
+    --color-canvas: var(--canvas);
+    --color-surface: var(--surface);
+    --color-surface-sunk: var(--surface-sunk);
+    --color-ink: var(--ink);
+    --color-ink-muted: var(--ink-muted);
+    --color-ink-faint: var(--ink-faint);
+    --color-hairline: var(--hairline);
+    --color-hairline-strong: var(--hairline-strong);
+    --color-accent: var(--accent);
+    --color-accent-hover: var(--accent-hover);
+    --color-accent-soft: var(--accent-soft);
+    --color-positive: var(--positive);
+    --color-warning: var(--warning);
+    --color-danger: var(--danger);
+
+    /* Spacing: p-4, gap-6, ... Clearing the namespace and Tailwind's dynamic
+       multiplier is what makes "nothing in between" a build-time rule rather
+       than a comment, because p-5 and p-7 then do not exist at all. */
+    --spacing: initial;
+    --spacing-*: initial;
+    --spacing-1: var(--space-1);
+    --spacing-2: var(--space-2);
+    --spacing-3: var(--space-3);
+    --spacing-4: var(--space-4);
+    --spacing-6: var(--space-6);
+    --spacing-8: var(--space-8);
+    --spacing-12: var(--space-12);
+    --spacing-16: var(--space-16);
+
+    /* Radii: rounded-md, rounded-pill, ... */
+    --radius-sm: var(--r-sm);
+    --radius-md: var(--r-md);
+    --radius-lg: var(--r-lg);
+    --radius-pill: var(--r-pill);
+
+    /* Elevation: shadow-popover */
+    --shadow-popover: var(--e-popover);
+
+    /* Motion: ease-quiet */
+    --ease-quiet: var(--ease);
+
+    /* Families: font-display, font-ui, font-numeric */
+    --font-display: var(--stack-display);
+    --font-ui: var(--stack-ui);
+    --font-numeric: var(--stack-numeric);
+
+    /* Type scale: text-display, text-title, ... each carrying its own
+       line-height, weight and tracking. */
+    --text-display: var(--size-display);
+    --text-display--line-height: var(--lh-display);
+    --text-display--font-weight: var(--weight-display);
+
+    --text-title: var(--size-title);
+    --text-title--line-height: var(--lh-title);
+    --text-title--font-weight: var(--weight-title);
+
+    --text-body: var(--size-body);
+    --text-body--line-height: var(--lh-body);
+    --text-body--font-weight: var(--weight-body);
+
+    --text-label: var(--size-label);
+    --text-label--line-height: var(--lh-label);
+    --text-label--font-weight: var(--weight-label);
+    --text-label--letter-spacing: var(--tracking-label);
+
+    --text-caption: var(--size-caption);
+    --text-caption--line-height: var(--lh-caption);
+    --text-caption--font-weight: var(--weight-caption);
+
+    --text-numeric: var(--size-numeric);
+    --text-numeric--line-height: var(--lh-numeric);
+    --text-numeric--font-weight: var(--weight-numeric);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ============================================================================
+   Base layer
+   ============================================================================ */
+
+@layer base {
+    html {
+        -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+        background-color: var(--canvas);
+        color: var(--ink);
+        font-family: var(--stack-ui);
+        font-size: var(--size-body);
+        line-height: var(--lh-body);
+        font-weight: var(--weight-body);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Sections 8.4 and 5.3: every interactive element keeps a visible focus
+       ring. Defined once here so no component has to remember it, and so that
+       an `outline: none` anywhere downstream is an obvious mistake in review. */
+    :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+    }
+
+    /* Section 8.4: respect prefers-reduced-motion. Collapsing --dur means
+       anything built on the motion token stops moving too, not just the
+       rules listed here. */
+    @media (prefers-reduced-motion: reduce) {
+        :root {
+            --dur: 1ms;
+        }
+
+        *,
+        *::before,
+        *::after {
+            animation-duration: 1ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 1ms !important;
+            scroll-behavior: auto !important;
+        }
+    }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ============================================================================
+   Utilities
+   ============================================================================ */
+
+/* Money and quantities. Section 8.2: "every monetary figure in Oja is set in
+   tabular monospace and right-aligned, so columns of naira line up to the
+   decimal." Alignment is deliberately NOT baked in, because it is a per-cell
+   layout decision. Compose with Tailwind's own text-right:
+       class="numeric text-right" */
+@utility numeric {
+    font-family: var(--stack-numeric);
+    font-size: var(--size-numeric);
+    line-height: var(--lh-numeric);
+    font-weight: var(--weight-numeric);
+    font-variant-numeric: tabular-nums;
+}
+
+/* Section 8.1: "Motion only on state change, 160 ms, transform/opacity only."
+   The property list is part of the rule, not a default to be overridden. */
+@utility transition-quiet {
+    transition-property: transform, opacity;
+    transition-duration: var(--dur);
+    transition-timing-function: var(--ease);
 }
