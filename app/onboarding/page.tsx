@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { signOut } from "@/lib/actions/auth";
-import { getCurrentProfile } from "@/lib/queries/profile";
+import { getCurrentProfile, getOwnProfileRow } from "@/lib/queries/profile";
 import { createClient } from "@/lib/supabase/server";
 
 import { CreateOrganisationForm } from "./create-organisation-form";
@@ -35,6 +35,16 @@ export default async function OnboardingPage() {
 
   if (profile) {
     redirect("/");
+  }
+
+  // A deactivated member reaches here too, because getCurrentProfile returns
+  // null for them as well. They are not a new user and this form cannot help
+  // them - it would fail with "This account already belongs to an
+  // organisation" after they filled it in.
+  const own = await getOwnProfileRow(userId);
+
+  if (own && !own.isActive) {
+    redirect("/deactivated");
   }
 
   const email =

@@ -14,7 +14,7 @@ import type { ReactNode } from "react";
 import { AppShell } from "@/components/app/app-shell";
 import { ThemeToggle } from "@/components/app/theme-toggle";
 import { signOut } from "@/lib/actions/auth";
-import { getCurrentProfile } from "@/lib/queries/profile";
+import { getCurrentProfile, getOwnProfileRow } from "@/lib/queries/profile";
 import { createClient } from "@/lib/supabase/server";
 
 // 1.5px stroke at 18px, per 02_CLAUDE.md section 2.
@@ -63,6 +63,18 @@ export default async function AppLayout({ children }: AppLayoutProps) {
   const profile = await getCurrentProfile(userId);
 
   if (!profile) {
+    // Null means one of two things, and they need different screens. A
+    // deactivated member still HAS a profile row - readable through
+    // profiles_select_self - but their organisation is hidden, so the join in
+    // getCurrentProfile comes back empty. Sending them to onboarding would put
+    // them in front of a form that create_organisation_and_profile refuses,
+    // because a profile already exists.
+    const own = await getOwnProfileRow(userId);
+
+    if (own && !own.isActive) {
+      redirect("/deactivated");
+    }
+
     redirect("/onboarding");
   }
 

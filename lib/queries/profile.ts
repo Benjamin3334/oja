@@ -101,3 +101,49 @@ export const getSignedInProfile = cache(async function getSignedInProfile(): Pro
 export function canManageInventory(role: CurrentProfile["role"]): boolean {
   return role === "owner" || role === "manager";
 }
+
+export interface OwnProfileRow {
+  id: string;
+  fullName: string;
+  isActive: boolean;
+}
+
+// The caller's OWN profile row, without joining organisations.
+//
+// getCurrentProfile returns null for a deactivated member, and NOT because the
+// row is missing: since 0016, current_org_id() returns null for them, so
+// org_select hides the organisation and the nested join comes back empty.
+// Null from that function therefore means two different things - "never had an
+// organisation" and "removed from one" - which is why this exists.
+//
+// The row itself is still readable through profiles_select_self, the policy
+// 0016 added for exactly this purpose: so the application can tell the two
+// apart and explain, rather than sending a removed member to onboarding where
+// create_organisation_and_profile refuses them because a profile already
+// exists.
+export const getOwnProfileRow = cache(async function getOwnProfileRow(
+  userId: string
+): Promise<OwnProfileRow | null> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, full_name, is_active")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (error) {
+    console.error("[queries.getOwnProfileRow]", error.message);
+    return null;
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  return {
+    id: data.id,
+    fullName: data.full_name,
+    isActive: data.is_active,
+  };
+});

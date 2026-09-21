@@ -21,6 +21,7 @@ const PROTECTED_PREFIXES = [
   "/settings",
   "/staff",
   "/onboarding",
+  "/deactivated",
 ];
 
 function requiresSession(pathname: string): boolean {
