@@ -153,13 +153,19 @@ export function AppShell({
           // From md it is part of the layout again and the width carries the
           // state instead of the transform.
           "md:static md:translate-x-0",
-          collapsed ? "w-[240px] md:w-16" : "w-[240px]",
+          collapsed
+            ? "w-[var(--sidebar-w)] md:w-[var(--sidebar-w-rail)]"
+            : "w-[var(--sidebar-w)]",
         ].join(" ")}
       >
         {/* The toggle is FIRST and fixed at the left edge, with the wordmark
             after it, so the button occupies the same 32x32 at the same offset
             in both states and never moves under the cursor. */}
-        <div className="flex h-16 shrink-0 items-center gap-3 px-4">
+        {/* px-3 here and on the nav below, in BOTH states. With a 40px slot
+            that puts every icon centre at 12 + 20 = 32px, which is the centre
+            of the 64px rail - so nothing moves horizontally when the width
+            animates. */}
+        <div className="flex h-16 shrink-0 items-center gap-3 px-3">
           <button
             ref={toggleRef}
             type="button"
@@ -170,7 +176,7 @@ export function AppShell({
             // Hidden below md: at that size the topbar button is the control,
             // and this one would be labelled "Collapse sidebar" inside a
             // drawer that does not collapse.
-            className="hidden size-8 shrink-0 items-center justify-center rounded-sm text-ink-muted transition-quiet hover:text-ink md:flex"
+            className="hidden size-[var(--nav-slot)] shrink-0 items-center justify-center rounded-md text-ink-muted transition-quiet hover:bg-surface-sunk hover:text-ink md:flex"
           >
             <PanelLeft size={18} strokeWidth={1.5} aria-hidden="true" />
           </button>
@@ -253,16 +259,27 @@ function ShellNavLink({ item, expanded, active }: ShellNavLinkProps) {
     <Link
       href={item.href}
       aria-current={active ? "page" : undefined}
+      // NOTHING here changes with state. No justify switch, no padding
+      // switch, no width switch. The item is always w-full, so at 64px it is
+      // a 40px square around the icon and at 240px it is the full-width pill
+      // - the same element, following the sidebar's width.
       className={[
-        "group relative flex items-center gap-3 rounded-sm py-2 text-body transition-quiet",
-        expanded ? "px-3" : "justify-center px-0",
+        "group relative flex w-full items-center gap-3 rounded-md transition-quiet",
         active
           ? "bg-accent-soft text-accent"
           : "text-ink-muted hover:bg-surface-sunk hover:text-ink",
       ].join(" ")}
     >
-      <span className="shrink-0">{item.icon}</span>
+      {/* A fixed square, never flexible, so the icon's position is decided by
+          the padding and this width alone. */}
+      <span className="flex size-[var(--nav-slot)] shrink-0 items-center justify-center">
+        {item.icon}
+      </span>
 
+      {/* Stays mounted in both states: unmounting it would reflow the row and
+          would take the accessible name with it. The aside clips it with
+          overflow-hidden and it fades on opacity only, so the letterforms are
+          never compressed and never wrap. */}
       <span
         className={[
           "whitespace-nowrap transition-opacity duration-[var(--dur)] ease-[var(--ease)]",
@@ -272,9 +289,10 @@ function ShellNavLink({ item, expanded, active }: ShellNavLinkProps) {
         {item.label}
       </span>
 
-      {/* Shown on hover AND on keyboard focus, so the rail is usable without a
-          pointer. Only rendered while collapsed; when expanded the label is
-          already there and a tooltip would be noise. */}
+      {/* Absolutely positioned, so it cannot affect the row's layout. Shown on
+          hover AND on keyboard focus, and only while collapsed, where the
+          label it duplicates is not readable. aria-hidden because that label
+          is still in the DOM and would otherwise be announced twice. */}
       {expanded ? null : (
         <span
           aria-hidden="true"

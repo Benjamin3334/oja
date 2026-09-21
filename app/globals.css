@@ -83,7 +83,9 @@
     --control-h: 36px;          /* buttons, inputs, selects */
     --control-h-touch: 44px;    /* the same controls on touch */
     --row-h: 44px;              /* table rows */
+    --nav-slot: 40px;           /* the square an icon sits in, expanded or not */
     --sidebar-w: 240px;
+    --sidebar-w-rail: 64px;     /* 12px padding + 40px slot + 12px padding */
     --dialog-max-w: 480px;
 
     /* ---- Font stacks ------------------------------------------------------
