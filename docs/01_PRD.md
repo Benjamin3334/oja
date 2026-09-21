@@ -449,7 +449,11 @@ Noto Sans is therefore loaded at 400 and 600, the two weights used beside numera
 - **Table:** 44px rows, hairline row separators, sticky header, text left / numbers right, empty state inside the table body.
 - **Badge:** pill, `--accent-soft`/`--surface-sunk` background, 12px label.
 - **Dialog:** centred, max 480px, `--e-popover`, backdrop `rgb(22 21 15 / 0.32)`, 160 ms fade + 2px rise.
-- **Nav:** 240px left sidebar, active item = `--accent-soft` background with `--accent` text, no icons-only mode in the MVP.
+- **Nav:** 240px left sidebar, active item = `--accent-soft` background with `--accent` text. **Collapsible to a 64px icon rail** (scope change, see below). Below `md` it becomes an off-canvas drawer over a `--ink` 30% backdrop, closing on backdrop click, Escape and route change.
+
+> **Scope change: the icons-only mode.** This section originally read "no icons-only mode in the MVP", on the reasoning that an icon rail costs tooltips, a persisted preference and a second set of states for no gain on a desktop screen. That was reversed once the inventory and sales tables existed: at 1280px the sidebar takes 19% of the width from tables that are already scrolling horizontally on a laptop, and the till in particular is a wide layout being squeezed by navigation the cashier does not look at mid-sale. The rail is 64px, so it returns 176px to the content.
+>
+> What it cost, recorded honestly: a tooltip for every collapsed item on hover *and* keyboard focus; a cookie so the server can render the right width on first paint; a second rendering of the toggle for mobile, where the sidebar is off-canvas and its own button would be off screen; and focus management for the drawer. The label is never removed from the DOM — it fades and is clipped — so the accessible name survives and nothing leaves the tab order.
 
 ### 8.4 Accessibility
 - All text meets WCAG AA (≥4.5:1); `--ink` on `--canvas` is ~16:1.

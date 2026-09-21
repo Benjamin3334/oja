@@ -7,10 +7,11 @@ import {
   UserCog,
   Users,
 } from "lucide-react";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
-import { NavLink } from "@/components/app/nav-link";
+import { AppShell } from "@/components/app/app-shell";
 import { ThemeToggle } from "@/components/app/theme-toggle";
 import { signOut } from "@/lib/actions/auth";
 import { getCurrentProfile } from "@/lib/queries/profile";
@@ -65,58 +66,46 @@ export default async function AppLayout({ children }: AppLayoutProps) {
     redirect("/onboarding");
   }
 
+  // Read on the server so the first paint is already the right width. A
+  // localStorage value would only be readable after hydration, so the sidebar
+  // would render open and snap shut - the same flash the theme script exists
+  // to prevent.
+  const collapsed =
+    (await cookies()).get("oja-sidebar")?.value === "collapsed";
+
+  const items = [
+    ...NAV_ITEMS,
+    ...(profile.role === "staff" ? [] : MANAGER_NAV_ITEMS),
+    ...(profile.role === "owner" ? OWNER_NAV_ITEMS : []),
+  ];
+
   return (
-    <div className="flex min-h-full flex-1">
-      {/* 240px sidebar, per PRD section 8.3. */}
-      <aside className="flex w-[240px] shrink-0 flex-col border-r border-hairline bg-surface">
-        <div className="flex h-16 items-center px-4">
-          <span className="font-display text-title text-ink">Oja</span>
-        </div>
+    <AppShell
+      initialCollapsed={collapsed}
+      items={items}
+      organisationName={profile.organisation.name}
+      headerRight={
+        <>
+          <ThemeToggle />
 
-        <nav aria-label="Main" className="flex flex-col gap-1 px-3">
-          {[
-            ...NAV_ITEMS,
-            ...(profile.role === "staff" ? [] : MANAGER_NAV_ITEMS),
-            ...(profile.role === "owner" ? OWNER_NAV_ITEMS : []),
-          ].map((item) => (
-            <NavLink
-              key={item.href}
-              href={item.href}
-              label={item.label}
-              icon={item.icon}
-            />
-          ))}
-        </nav>
-      </aside>
-
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-16 shrink-0 items-center justify-between border-b border-hairline px-6">
-          <span className="text-title text-ink">
-            {profile.organisation.name}
+          <span className="hidden text-caption text-ink-muted sm:inline">
+            {profile.fullName} &middot; {profile.role}
           </span>
 
-          <div className="flex items-center gap-4">
-            <ThemeToggle />
-
-            <span className="text-caption text-ink-muted">
-              {profile.fullName} &middot; {profile.role}
-            </span>
-
-            {/* A plain form posting to a Server Action. No client component is
-                needed for this, so none is used. */}
-            <form action={signOut}>
-              <button
-                type="submit"
-                className="h-[36px] rounded-sm border border-hairline px-3 text-label text-ink transition-quiet hover:bg-surface-sunk"
-              >
-                Sign out
-              </button>
-            </form>
-          </div>
-        </header>
-
-        <main className="flex-1 p-6">{children}</main>
-      </div>
-    </div>
+          {/* A plain form posting to a Server Action. No client component is
+              needed for this, so none is used. */}
+          <form action={signOut}>
+            <button
+              type="submit"
+              className="h-[36px] rounded-sm border border-hairline px-3 text-label text-ink transition-quiet hover:bg-surface-sunk"
+            >
+              Sign out
+            </button>
+          </form>
+        </>
+      }
+    >
+      {children}
+    </AppShell>
   );
 }
