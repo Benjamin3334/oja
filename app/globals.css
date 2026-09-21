@@ -87,7 +87,7 @@
     --dialog-max-w: 480px;
 
     /* ---- Font stacks ------------------------------------------------------
-            --font-instrument-serif, --font-geist and --font-jetbrains-mono are
+            --font-instrument-serif, --font-geist and --font-noto-sans are
             supplied by next/font from app/layout.tsx. Until that file is
             written they are simply undefined, and each stack falls through to
             its fallbacks, so this stylesheet is valid on its own.
@@ -97,8 +97,13 @@
                      "Palatino Linotype", Palatino, Georgia, serif;
     --stack-ui: var(--font-geist), system-ui, -apple-system, "Segoe UI",
                 sans-serif;
-    --stack-numeric: var(--font-jetbrains-mono), ui-monospace, "SF Mono",
-                     "Cascadia Mono", Consolas, monospace;
+    /* Digits are Geist with tabular figures. Noto Sans follows it ONLY so
+       the browser's per-glyph fallback can supply the naira sign, which Geist
+       does not contain - verified by parsing the font's cmap. Per-glyph
+       fallback means Geist still sets every character it has, so the numerals
+       are not a second family sneaking in. */
+    --stack-numeric: var(--font-geist), var(--font-noto-sans), system-ui,
+                     -apple-system, "Segoe UI", sans-serif;
 
     /* ---- Type scale (section 8.2) ---------------------------------------- */
     --size-display: 34px;   --lh-display: 40px;   --weight-display: 400;
@@ -332,7 +337,20 @@
     font-size: var(--size-numeric);
     line-height: var(--lh-numeric);
     font-weight: var(--weight-numeric);
+    /* Both properties on purpose. font-variant-numeric is the standard route
+       and what a modern browser honours; font-feature-settings names the raw
+       OpenType feature and covers engines that miss the higher-level property.
+       Either alone leaves a case where the columns stop aligning. */
     font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+}
+
+/* The naira sign is supplied by Noto Sans while the digits beside it are
+   Geist, so it gets its own hook for optical size and baseline matching
+   without touching thirty call sites. It carries no tabular figure setting:
+   tnum applies to digits, and the symbol is not one. */
+@utility currency-symbol {
+    font-feature-settings: normal;
 }
 
 /* A single entrance: fade plus a 2px rise, at the motion token. Section 8.1

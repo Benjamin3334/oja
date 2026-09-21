@@ -1,9 +1,11 @@
 import { History } from "lucide-react";
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { Badge } from "@/components/ui/badge";
+import { Money } from "@/components/ui/money";
 import { LinkButton } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -18,7 +20,7 @@ import {
 } from "@/components/ui/table";
 import { setProductActive } from "@/lib/actions/products";
 import { adjustStock, receiveStock } from "@/lib/actions/stock";
-import { formatDateTime, formatMoney, formatSignedQuantity } from "@/lib/format";
+import { formatDateTime, formatSignedQuantity } from "@/lib/format";
 import { listCategories } from "@/lib/queries/categories";
 import { getProduct, getProductMovements } from "@/lib/queries/products";
 import { canManageInventory, getSignedInProfile } from "@/lib/queries/profile";
@@ -42,7 +44,7 @@ const MOVEMENT_LABELS: Record<string, string> = {
 
 interface FactProps {
   label: string;
-  value: string;
+  value: ReactNode;
 }
 
 function Fact({ label, value }: FactProps) {
@@ -118,14 +120,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <Fact label="Reorder level" value={String(product.reorderLevel)} />
           <Fact
             label="Selling price"
-            value={formatMoney(product.unitPrice, currency)}
+            value={<Money amount={product.unitPrice} currency={currency} />}
           />
           {/* Cost, and therefore margin, is management information. Staff can
               see what a thing sells for, not what it cost to buy. */}
           {canManage ? (
             <Fact
               label="Cost price"
-              value={formatMoney(product.costPrice, currency)}
+              value={<Money amount={product.costPrice} currency={currency} />}
             />
           ) : null}
         </div>

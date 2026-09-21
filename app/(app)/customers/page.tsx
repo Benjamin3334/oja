@@ -4,6 +4,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { LinkButton } from "@/components/ui/button";
+import { Money } from "@/components/ui/money";
 import { EmptyState } from "@/components/ui/empty-state";
 import {
   TBody,
@@ -14,7 +15,6 @@ import {
   Th,
   Tr,
 } from "@/components/ui/table";
-import { formatMoney } from "@/lib/format";
 import { listCustomers } from "@/lib/queries/customers";
 import { getSignedInProfile } from "@/lib/queries/profile";
 
@@ -85,7 +85,7 @@ export default async function CustomersPage() {
                 </Td>
                 <Td>{customer.phone ?? "Not given"}</Td>
                 <Td numeric>{customer.saleCount}</Td>
-                <Td numeric>{formatMoney(customer.lifetimeSpend, currency)}</Td>
+                <Td numeric>{<Money amount={customer.lifetimeSpend} currency={currency} />}</Td>
               </Tr>
             ))
           )}

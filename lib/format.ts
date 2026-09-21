@@ -35,3 +35,37 @@ export function formatDateTime(iso: string): string {
     timeStyle: "short",
   }).format(parsed);
 }
+
+export interface MoneyParts {
+  // The currency symbol on its own, so it can be rendered in its own element.
+  // Geist has no naira sign, so that character is set by Noto Sans through
+  // per-glyph fallback while the digits stay Geist - splitting them is what
+  // allows the symbol to be tuned without affecting the figures.
+  symbol: string;
+  // Everything else, including any separator Intl places between them.
+  digits: string;
+}
+
+export function formatMoneyParts(amount: number, currency: string): MoneyParts {
+  try {
+    const parts = new Intl.NumberFormat("en-NG", {
+      style: "currency",
+      currency,
+    }).formatToParts(amount);
+
+    return {
+      symbol: parts
+        .filter((part) => part.type === "currency")
+        .map((part) => part.value)
+        .join(""),
+      digits: parts
+        .filter((part) => part.type !== "currency")
+        .map((part) => part.value)
+        .join(""),
+    };
+  } catch {
+    // Same guard as formatMoney: Intl throws on an unknown currency code
+    // rather than degrading, and the code comes from the database.
+    return { symbol: currency, digits: ` ${amount.toFixed(2)}` };
+  }
+}

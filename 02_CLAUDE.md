@@ -81,7 +81,8 @@ docs/                   PRD, network design, capstone documentation
 - Spacing only from the scale: 4, 8, 12, 16, 24, 32, 48, 64.
 - Borders, not shadows. Elevation only on dialogs and popovers.
 - `--accent` is reserved for the primary action and the active nav item. Nothing else.
-- Fonts: Instrument Serif (display/KPI figures), Geist (UI), JetBrains Mono with `tabular-nums` (all money and quantities). Money is right-aligned everywhere.
+- Fonts: Instrument Serif (display), Geist (UI **and** all numerals, with `tabular-nums` + `font-feature-settings: "tnum"`). Money is right-aligned everywhere. KPI figures are Geist 600 at `-0.02em`.
+- The naira sign comes from Noto Sans, which sits second in the numeral stack purely so the browser's per-glyph fallback can supply U+20A6 — Geist does not contain it (verified by parsing the font's `cmap`). Never assume a font has a currency glyph because its declared `unicode-range` covers the codepoint; the range says what a subset is meant to serve, not what is in it.
 - **Banned:** purple/blue gradients, emoji as icons, stacked drop shadows, Inter/Roboto/Arial, decorative illustrations, more than one primary button per screen, animation longer than 200 ms.
 - Every interactive element keeps a visible focus ring. Never `outline: none` without a replacement.
 - Every list has a designed empty state that names the next action.

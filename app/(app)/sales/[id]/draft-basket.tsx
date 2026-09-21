@@ -4,6 +4,7 @@ import { Trash2 } from "lucide-react";
 import { useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Money } from "@/components/ui/money";
 import {
   TBody,
   THead,
@@ -13,7 +14,6 @@ import {
   Tr,
 } from "@/components/ui/table";
 import { completeSale, removeLine, updateLineQuantity } from "@/lib/actions/sales";
-import { formatMoney } from "@/lib/format";
 import type { SaleLine } from "@/lib/queries/sales";
 
 interface DraftBasketProps {
@@ -76,7 +76,7 @@ export function DraftBasket({
                   {line.sku}
                 </span>
               </Td>
-              <Td numeric>{formatMoney(line.unitPrice, currency)}</Td>
+              <Td numeric>{<Money amount={line.unitPrice} currency={currency} />}</Td>
               <Td numeric>
                 <label className="sr-only" htmlFor={`qty-${line.id}`}>
                   Quantity of {line.productName}
@@ -92,7 +92,7 @@ export function DraftBasket({
                   className="numeric h-[var(--control-h)] w-20 rounded-sm border border-hairline bg-surface px-2 text-right text-ink"
                 />
               </Td>
-              <Td numeric>{formatMoney(line.lineTotal, currency)}</Td>
+              <Td numeric>{<Money amount={line.lineTotal} currency={currency} />}</Td>
               <Td>
                 <Button
                   type="button"
@@ -113,7 +113,7 @@ export function DraftBasket({
         <div>
           <p className="text-label text-ink-muted">Total</p>
           <p className="numeric mt-1 text-title text-ink">
-            {formatMoney(total, currency)}
+            {<Money amount={total} currency={currency} />}
           </p>
         </div>
 

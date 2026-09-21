@@ -377,7 +377,7 @@ The same restraint shows up in the design languages people cite as the current b
 | AI slop | Oja |
 |---|---|
 | Purple→blue gradient hero on white | Warm paper canvas, ink text, one deep-green accent |
-| Inter / Roboto everywhere | Instrument Serif display + Geist UI + JetBrains Mono numerals |
+| Inter / Roboto everywhere | Instrument Serif display + Geist UI + Geist tabular figures for numerals |
 | Heavy card drop-shadows stacked three deep | 1px hairline borders; elevation reserved for popovers and dialogs only |
 | Emoji as icons | A single consistent line-icon set at 1.5px stroke |
 | Every element animated | Motion only on state change, 160 ms, transform/opacity only |
@@ -432,9 +432,15 @@ The same restraint shows up in the design languages people cite as the current b
 | `body` | Geist | 15/22, 400 | Everything |
 | `label` | Geist | 13/18, 500, +0.01em | Form labels, table headers (uppercase optional) |
 | `caption` | Geist | 12/16, 400 | Helper text, timestamps |
-| `numeric` | JetBrains Mono | 14/20, `font-variant-numeric: tabular-nums` | Money, quantities, all table figures |
+| `numeric` | Geist, tabular figures | 14/20, `font-variant-numeric: tabular-nums` + `font-feature-settings: "tnum"` | Money, quantities, all table figures |
 
-> **The one detail people remember:** every monetary figure in Oja is set in tabular monospace and right-aligned, so columns of naira line up to the decimal. It is the difference between a spreadsheet and a toy.
+> **The one detail people remember:** every monetary figure in Oja is set in tabular figures and right-aligned, so columns of naira line up to the decimal. It is the difference between a spreadsheet and a toy.
+
+**Why tabular figures rather than a monospace face.** A monospace font makes money look like code, and the earlier choice — JetBrains Mono — has no naira sign at all, so the browser substituted another font for ₦ alone and the symbol arrived heavier than the digits beside it. Numerals are now Geist with `tabular-nums` and `font-feature-settings: "tnum"`, which gives fixed-width digits without the typewriter association.
+
+Geist has no ₦ either. This was verified rather than assumed: requesting U+20A6 from Google Fonts and parsing the returned font's `cmap` table shows no glyph in Geist or Instrument Sans, and a glyph in Noto Sans and Inter. Note that Geist's `latin-ext` subset *declares* `unicode-range: U+20A0-20AB`, which contains U+20A6 — reading the declared range alone would have given the wrong answer.
+
+Noto Sans is therefore loaded at 400 and 600, the two weights used beside numerals, and sits second in the numeral stack. The browser's per-glyph fallback takes ₦ from it and everything else from Geist, so the symbol matches the weight of its digits and the digits are not silently set in a second family.
 
 ### 8.3 Component rules
 - **Button:** height 36px (44px on touch), `--r-sm`, primary = solid `--accent` with white text; secondary = `--surface` with hairline border; destructive = text `--danger`, solid only on confirmation dialogs. One primary action per screen.

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { Badge } from "@/components/ui/badge";
+import { Money } from "@/components/ui/money";
 import { Card } from "@/components/ui/card";
 import {
   TBody,
@@ -12,7 +13,7 @@ import {
   Th,
   Tr,
 } from "@/components/ui/table";
-import { formatDateTime, formatMoney } from "@/lib/format";
+import { formatDateTime } from "@/lib/format";
 import { listProducts } from "@/lib/queries/products";
 import { getSignedInProfile } from "@/lib/queries/profile";
 import { getSale } from "@/lib/queries/sales";
@@ -135,9 +136,9 @@ export default async function SalePage({ params }: SalePageProps) {
                   {/* This is what the customer actually paid, snapshotted at
                       completion by 0012. Changing the product price since then
                       does not move it. */}
-                  <Td numeric>{formatMoney(line.unitPrice, currency)}</Td>
+                  <Td numeric>{<Money amount={line.unitPrice} currency={currency} />}</Td>
                   <Td numeric>{line.quantity}</Td>
-                  <Td numeric>{formatMoney(line.lineTotal, currency)}</Td>
+                  <Td numeric>{<Money amount={line.lineTotal} currency={currency} />}</Td>
                 </Tr>
               ))}
             </TBody>
@@ -146,7 +147,7 @@ export default async function SalePage({ params }: SalePageProps) {
           <div className="flex items-center justify-between rounded-md border border-hairline bg-surface px-6 py-4">
             <p className="text-label text-ink-muted">Total</p>
             <p className="numeric text-title text-ink">
-              {formatMoney(sale.total, currency)}
+              {<Money amount={sale.total} currency={currency} />}
             </p>
           </div>
         </>

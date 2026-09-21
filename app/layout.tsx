@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { Geist, Instrument_Serif, JetBrains_Mono } from "next/font/google";
+import { Geist, Instrument_Serif, Noto_Sans } from "next/font/google";
 import "./globals.css";
 
 // The three families named in docs/01_PRD.md section 8.2. Each one publishes a
@@ -24,10 +24,26 @@ const geist = Geist({
   display: "swap",
 });
 
-// Money and quantities, always tabular. Also variable.
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
-  subsets: ["latin"],
+// Money and quantities are set in Geist with tabular figures, NOT in a
+// monospace face - a monospace number reads as code rather than as money.
+//
+// Noto Sans exists here for exactly one character. Geist has no naira sign
+// (U+20A6), which was verified by requesting that codepoint from Google Fonts
+// and parsing the returned font's cmap table: Geist and Instrument Sans both
+// return no glyph, Noto Sans and Inter do. Without a fallback the browser
+// substitutes whatever it likes and the symbol arrives at the wrong weight.
+//
+// latin-ext, not latin: U+20A6 sits in the latin-ext range. Requesting latin
+// would load a file that does not contain the one glyph this font is here for.
+//
+// Only the two weights used beside numerals are requested - 400 for table
+// figures, 600 for KPI figures - so the symbol always matches the weight of
+// the digits next to it. next/font/google has no per-character subsetting, so
+// a named subset is as tight as this can be made.
+const notoSans = Noto_Sans({
+  variable: "--font-noto-sans",
+  subsets: ["latin-ext"],
+  weight: ["400", "600"],
   display: "swap",
 });
 
@@ -47,7 +63,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html
       lang="en"
-      className={`${instrumentSerif.variable} ${geist.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`${instrumentSerif.variable} ${geist.variable} ${notoSans.variable} h-full antialiased`}
     >
       <head>
         {/*

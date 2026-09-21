@@ -1,10 +1,10 @@
 import { PackageSearch, TrendingUp } from "lucide-react";
+import { Money } from "@/components/ui/money";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
-import { formatMoney } from "@/lib/format";
 import { getCurrentProfile } from "@/lib/queries/profile";
 import { getTodayFigures } from "@/lib/queries/sales";
 import { createClient } from "@/lib/supabase/server";
@@ -15,18 +15,23 @@ export const metadata: Metadata = {
 
 interface KpiTileProps {
   label: string;
-  value: string;
+  // ReactNode, not string: the value is <Money>, which renders the currency
+  // symbol in its own element so it can be tuned independently of the digits.
+  value: ReactNode;
 }
 
-// PRD section 5.2, FR-2.1. Figures are set in JetBrains Mono with tabular
-// numerals: section 5.3 of 02_CLAUDE.md puts all money AND quantities in the
-// mono face, which takes precedence over the type scale's note that the display
-// face covers "KPI figures".
+// PRD section 5.2, FR-2.1. Figures are Geist with tabular figures at weight
+// 600 and -0.02em tracking. Not a monospace face: a monospace number reads as
+// code, and the font previously used here had no naira sign, so the symbol was
+// substituted from elsewhere and arrived heavier than its digits.
 function KpiTile({ label, value }: KpiTileProps) {
   return (
     <div className="rounded-md border border-hairline bg-surface p-6">
       <p className="text-label text-ink-muted">{label}</p>
-      <p className="mt-2 font-numeric text-display tabular-nums text-ink">
+      {/* Geist with tabular figures at 600 and -0.02em, per PRD section 8.2.
+          Tightening the tracking is what stops a large figure reading as
+          loose; tabular is what keeps four tiles in a row aligned. */}
+      <p className="mt-2 font-numeric text-display font-semibold tracking-[-0.02em] tabular-nums text-ink">
         {value}
       </p>
     </div>
@@ -119,7 +124,7 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiTile
           label={isStaff ? "Your revenue today" : "Revenue today"}
-          value={formatMoney(figures.revenue, currency)}
+          value={<Money amount={figures.revenue} currency={currency} />}
         />
         <KpiTile
           label={isStaff ? "Your sales today" : "Sales today"}

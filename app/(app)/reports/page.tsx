@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { EmptyState } from "@/components/ui/empty-state";
+import { Money } from "@/components/ui/money";
 import {
   TBody,
   THead,
@@ -12,7 +13,6 @@ import {
   Th,
   Tr,
 } from "@/components/ui/table";
-import { formatMoney } from "@/lib/format";
 import { getSignedInProfile } from "@/lib/queries/profile";
 import {
   getProductPerformance,
@@ -102,7 +102,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
         <div className="rounded-md border border-hairline bg-surface p-6">
           <p className="text-label text-ink-muted">Revenue</p>
           <p className="numeric mt-2 text-title text-ink">
-            {formatMoney(totals.revenue, currency)}
+            {<Money amount={totals.revenue} currency={currency} />}
           </p>
         </div>
         <div className="rounded-md border border-hairline bg-surface p-6">
@@ -143,7 +143,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
                 <Td>{point.label}</Td>
                 <Td numeric>{point.saleCount}</Td>
                 <Td numeric>{point.itemsSold}</Td>
-                <Td numeric>{formatMoney(point.revenue, currency)}</Td>
+                <Td numeric>{<Money amount={point.revenue} currency={currency} />}</Td>
               </Tr>
             ))
           )}
@@ -192,9 +192,9 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
                     </span>
                   </Td>
                   <Td numeric>{row.unitsSold}</Td>
-                  <Td numeric>{formatMoney(row.revenue, currency)}</Td>
-                  <Td numeric>{formatMoney(row.costOfGoods, currency)}</Td>
-                  <Td numeric>{formatMoney(row.grossMargin, currency)}</Td>
+                  <Td numeric>{<Money amount={row.revenue} currency={currency} />}</Td>
+                  <Td numeric>{<Money amount={row.costOfGoods} currency={currency} />}</Td>
+                  <Td numeric>{<Money amount={row.grossMargin} currency={currency} />}</Td>
                 </Tr>
               ))
             )}
@@ -212,7 +212,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
         <div className="mb-4 rounded-md border border-hairline bg-surface p-6">
           <p className="text-label text-ink-muted">Total stock at cost</p>
           <p className="numeric mt-2 text-title text-ink">
-            {formatMoney(valuation.totalValue, currency)}
+            {<Money amount={valuation.totalValue} currency={currency} />}
           </p>
         </div>
 
@@ -238,7 +238,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
                 <Tr key={row.categoryName}>
                   <Td>{row.categoryName}</Td>
                   <Td numeric>{row.productCount}</Td>
-                  <Td numeric>{formatMoney(row.stockValue, currency)}</Td>
+                  <Td numeric>{<Money amount={row.stockValue} currency={currency} />}</Td>
                 </Tr>
               ))
             )}

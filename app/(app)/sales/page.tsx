@@ -4,6 +4,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { Badge } from "@/components/ui/badge";
+import { Money } from "@/components/ui/money";
 import { LinkButton } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import {
@@ -15,7 +16,7 @@ import {
   Th,
   Tr,
 } from "@/components/ui/table";
-import { formatDateTime, formatMoney } from "@/lib/format";
+import { formatDateTime } from "@/lib/format";
 import { getSignedInProfile } from "@/lib/queries/profile";
 import { listSales, type SaleStatus } from "@/lib/queries/sales";
 import { PAYMENT_METHODS, type PaymentMethod } from "@/lib/payment-methods";
@@ -146,7 +147,7 @@ export default async function SalesPage({ searchParams }: SalesPageProps) {
                     {sale.status.charAt(0).toUpperCase() + sale.status.slice(1)}
                   </Badge>
                 </Td>
-                <Td numeric>{formatMoney(sale.total, currency)}</Td>
+                <Td numeric>{<Money amount={sale.total} currency={currency} />}</Td>
               </Tr>
             ))
           )}

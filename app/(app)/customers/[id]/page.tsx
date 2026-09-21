@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { Badge } from "@/components/ui/badge";
+import { Money } from "@/components/ui/money";
 import { LinkButton } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -16,7 +17,7 @@ import {
   Th,
   Tr,
 } from "@/components/ui/table";
-import { formatDateTime, formatMoney } from "@/lib/format";
+import { formatDateTime } from "@/lib/format";
 import { getCustomer } from "@/lib/queries/customers";
 import { getSignedInProfile } from "@/lib/queries/profile";
 
@@ -94,7 +95,7 @@ export default async function CustomerPage({ params }: CustomerPageProps) {
               {isStaff ? "Spend with you" : "Lifetime spend"}
             </p>
             <p className="numeric mt-1 text-title text-ink">
-              {formatMoney(customer.lifetimeSpend, currency)}
+              {<Money amount={customer.lifetimeSpend} currency={currency} />}
             </p>
             {/* FR-5.2 calls this lifetime spend, and for an owner it is. For a
                 staff member 0008 hides colleagues sales, so the honest label
@@ -150,7 +151,7 @@ export default async function CustomerPage({ params }: CustomerPageProps) {
                         purchase.status.slice(1)}
                     </Badge>
                   </Td>
-                  <Td numeric>{formatMoney(purchase.total, currency)}</Td>
+                  <Td numeric>{<Money amount={purchase.total} currency={currency} />}</Td>
                 </Tr>
               ))
             )}

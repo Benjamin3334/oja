@@ -4,6 +4,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { Badge } from "@/components/ui/badge";
+import { Money } from "@/components/ui/money";
 import { LinkButton } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import {
@@ -15,7 +16,6 @@ import {
   Th,
   Tr,
 } from "@/components/ui/table";
-import { formatMoney } from "@/lib/format";
 import { listCategories } from "@/lib/queries/categories";
 import { listProducts } from "@/lib/queries/products";
 import { canManageInventory, getSignedInProfile } from "@/lib/queries/profile";
@@ -151,7 +151,7 @@ export default async function InventoryPage({
                     : "Uncategorised"}
                 </Td>
                 <Td numeric>{product.stockQuantity}</Td>
-                <Td numeric>{formatMoney(product.unitPrice, currency)}</Td>
+                <Td numeric>{<Money amount={product.unitPrice} currency={currency} />}</Td>
                 <Td>
                   {!product.isActive ? (
                     <Badge tone="neutral">Inactive</Badge>
