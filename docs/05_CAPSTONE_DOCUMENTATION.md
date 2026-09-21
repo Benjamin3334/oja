@@ -161,6 +161,38 @@ The brief requires this section. It is also the section your supervisor will int
 - AI-generated code was reviewed for injection risk, secret handling and authorisation before merging.
 - AI assistance is disclosed here in full; the design decisions, the verification and the defence are mine.
 
+**Declining to give the assistant database access.** Partway through the build the
+assistant proposed being given a direct PostgreSQL connection string, held in
+`.env.local`, together with a small script so that it could apply migrations
+itself instead of my copying each one into the Supabase SQL editor. The stated
+benefit was convenience: it would save a paste and a round trip per migration.
+
+I declined it, for three reasons.
+
+1. **It connects as `postgres`.** That role owns the tables, so it bypasses
+   Row-Level Security completely. Every policy in this project — the whole
+   argument of §9 — is invisible to a client holding that string. I had already
+   kept the `service_role` key out of the repository for exactly this reason;
+   a superuser connection string is the same power under a different name.
+2. **The saving was seconds, the exposure was total.** The cost being removed
+   was a copy and paste. The thing being granted was unrestricted read and write
+   over every organisation's data in the database, to an automated tool, for the
+   remainder of the project.
+3. **The SQL editor is the review step, not a chore.** Pasting each migration by
+   hand is the point at which I read it. Automating the paste would not have
+   removed the work; it would have removed the reading, and the whole
+   verification rule in §6.4 depends on that reading happening.
+
+The arrangement kept instead: the assistant writes each migration and a proof
+script for it, I review both, I run them in the SQL editor myself, and I paste
+the result back. Every schema change in `supabase/migrations/` reached the
+database through my hands and my eyes.
+
+This is worth stating plainly because the convenience argument was reasonable
+and the tool made it in good faith. The judgement that mattered was not
+spotting a bad suggestion — it was noticing that a small, sensible-sounding
+saving was being traded against the security boundary the project is built on.
+
 ---
 
 ## 7. Problems encountered and how they were resolved
