@@ -32,11 +32,28 @@
 
 begin;
 
+-- The acting user is resolved, not pasted in. Earlier drafts of these scripts
+-- carried a literal auth uid, which meant they only ran for the person who
+-- wrote them, and put that person's account id in the repository. The oldest
+-- profile is used: the account that created the organisation.
+create temp table t_actor on commit drop as
+select id from profiles order by created_at limit 1;
+
+do $fn_require_actor$
+begin
+    if not exists (select 1 from t_actor) then
+        raise exception
+            'No profile exists yet. Sign up through the app first, then run this.';
+    end if;
+end;
+$fn_require_actor$;
+
 -- Become a staff member of your own organisation, for this transaction only.
-update profiles set role = 'staff' where id = '57f6a574-7001-468c-bb48-5bb9f76806f8';
+update profiles set role = 'staff' where id = (select id from t_actor);
 
 select set_config('request.jwt.claims',
-                  '{"sub":"57f6a574-7001-468c-bb48-5bb9f76806f8","role":"authenticated"}',
+                  json_build_object('sub', (select id from t_actor),
+                                    'role', 'authenticated')::text,
                   true);
 
 set local role authenticated;
