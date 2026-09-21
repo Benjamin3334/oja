@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import type { ActionResult } from "@/lib/actions/auth";
 import { getSignedInProfile } from "@/lib/queries/profile";
 import { createClient } from "@/lib/supabase/server";
+import { addMemberSchema } from "@/lib/validation/staff";
 import type { Database } from "@/types/database.types";
 
 type UserRole = Database["public"]["Enums"]["user_role"];
@@ -18,6 +19,14 @@ const ROLES: UserRole[] = ["owner", "manager", "staff"];
 // with the real text in the server log.
 function toUserMessage(rawMessage: string): string {
   const known = [
+    // 0018. These are the ones an owner will actually hit, and each one tells
+    // them what to do next rather than what went wrong internally.
+    "No Oja account uses that email. Ask them to sign up first.",
+    "That account belongs to another organisation.",
+    "Already a member.",
+    "You cannot add yourself",
+    "Choose manager or staff. An owner is made by promoting an existing member",
+    "Only an owner can add a member",
     "You cannot deactivate your own account",
     "An organisation must keep at least one active owner",
     "Only an owner can change roles",
@@ -106,6 +115,43 @@ export async function setMemberActive(
 
   if (error) {
     console.error("[staff.setMemberActive]", error.message);
+    return { ok: false, error: toUserMessage(error.message) };
+  }
+
+  revalidatePath("/staff");
+  return { ok: true };
+}
+
+// FR-6.1, the missing half: an owner can add somebody. 0018 does the work and
+// all seven of its guards; this validates the shape, refuses a non-owner with
+// a sentence, and translates the refusals.
+export async function addMember(
+  _previous: ActionResult | null,
+  formData: FormData
+): Promise<ActionResult> {
+  const parsed = addMemberSchema.safeParse({
+    email: String(formData.get("email") ?? ""),
+    role: String(formData.get("role") ?? ""),
+  });
+
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0].message };
+  }
+
+  const guard = await requireOwner();
+
+  if (!guard.ok) {
+    return guard;
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("add_member_by_email", {
+    p_email: parsed.data.email,
+    p_role: parsed.data.role as UserRole,
+  });
+
+  if (error) {
+    console.error("[staff.addMember]", error.message);
     return { ok: false, error: toUserMessage(error.message) };
   }
 

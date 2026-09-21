@@ -664,6 +664,13 @@ export type Database = {
       }
     }
     Functions: {
+      add_member_by_email: {
+        Args: {
+          p_email: string
+          p_role: Database["public"]["Enums"]["user_role"]
+        }
+        Returns: string
+      }
       complete_sale: { Args: { p_sale_id: string }; Returns: undefined }
       create_draft_sale: {
         Args: {
