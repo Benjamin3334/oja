@@ -1,11 +1,16 @@
 import { PackageSearch, TrendingUp } from "lucide-react";
+import { RevenueChart } from "@/components/app/revenue-chart";
 import { Money } from "@/components/ui/money";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
-import { getLowStock, getTopSellers } from "@/lib/queries/dashboard";
+import {
+  getLowStock,
+  getRevenueSeries,
+  getTopSellers,
+} from "@/lib/queries/dashboard";
 import { getCurrentProfile } from "@/lib/queries/profile";
 import { getTodayFigures } from "@/lib/queries/sales";
 import { createClient } from "@/lib/supabase/server";
@@ -114,10 +119,11 @@ export default async function DashboardPage() {
   // Migration 0008 scopes sales by sold_by, so these figures are this
   // person takings for a staff member and the whole shop for an owner.
   // The caption below says which, rather than letting the number imply.
-  const [figures, lowStock, topSellers] = await Promise.all([
+  const [figures, lowStock, topSellers, revenue] = await Promise.all([
     getTodayFigures(),
     getLowStock(),
     getTopSellers(),
+    getRevenueSeries(),
   ]);
   const isStaff = profile.role === "staff";
 
@@ -138,6 +144,29 @@ export default async function DashboardPage() {
         <KpiTile label="Items sold today" value={String(figures.itemsSold)} />
         <KpiTile label="Low stock" value={String(figures.lowStockCount)} />
       </div>
+
+      {/* PRD section 8.5 orders the dashboard: tiles, then the chart, then
+          the two panels. A new organisation gets a designed empty state here
+          rather than fourteen grey stubs, which would read as a broken chart
+          rather than an empty one. */}
+      {revenue.total === 0 ? (
+        <Panel title="Revenue, last 14 days">
+          <EmptyState
+            icon={<TrendingUp size={18} strokeWidth={1.5} aria-hidden="true" />}
+            headline="No revenue yet."
+            body="Sales will appear here once you record one. The chart covers the last fourteen days."
+            actionLabel="Record a sale"
+            actionHref="/sales/new"
+          />
+        </Panel>
+      ) : (
+        <RevenueChart
+          days={revenue.days}
+          total={revenue.total}
+          trendPercent={revenue.trendPercent}
+          currency={currency}
+        />
+      )}
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Panel title="Low stock">

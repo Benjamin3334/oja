@@ -1,3 +1,4 @@
+import { lagosDateOffsetBy } from "@/lib/queries/reports";
 import { createClient } from "@/lib/supabase/server";
 
 // The two dashboard panels. Both are summaries of data that has a full screen
@@ -112,4 +113,95 @@ export async function getTopSellers(
   return [...totals.values()]
     .sort((a, b) => b.revenue - a.revenue)
     .slice(0, limit);
+}
+
+export interface RevenueDay {
+  // Lagos calendar date, YYYY-MM-DD.
+  date: string;
+  // Short label for the axis, e.g. "Mon 21".
+  label: string;
+  revenue: number;
+}
+
+export interface RevenueSeries {
+  days: RevenueDay[];
+  total: number;
+  // Null when the previous week earned nothing: a percentage change from zero
+  // is not a number anyone can act on, and "+infinity%" is worse than silence.
+  trendPercent: number | null;
+}
+
+// PRD section 8.5: the 14-day revenue chart.
+//
+// GAPS ARE FILLED IN TYPESCRIPT, NOT SQL
+//   generate_series() would be the neater answer and would keep the whole
+//   shape in the database - but it would need a new view or function, and the
+//   schema is closed at 0017. Adding a migration to pad fourteen rows would be
+//   the tail wagging the dog.
+//
+//   The cost is small and bounded: v_revenue_by_day returns at most 14 rows
+//   for this window, and the fill walks a fixed 14-day calendar. This is not
+//   the client-side aggregation FR-7.1 forbids - the summing still happens in
+//   the view. What happens here is padding, not arithmetic.
+//
+//   A day with no sales must still appear, or the chart silently compresses a
+//   quiet week into a busy-looking one by omitting the empty days.
+export async function getRevenueSeries(days = 14): Promise<RevenueSeries> {
+  const supabase = await createClient();
+
+  const from = lagosDateOffsetBy(-(days - 1));
+  const to = lagosDateOffsetBy(0);
+
+  const { data, error } = await supabase
+    .from("v_revenue_by_day")
+    .select("day, revenue")
+    .gte("day", from)
+    .lte("day", to);
+
+  if (error) {
+    console.error("[queries.getRevenueSeries]", error.message);
+  }
+
+  const byDate = new Map<string, number>();
+
+  for (const row of data ?? []) {
+    if (row.day) {
+      byDate.set(row.day, row.revenue ?? 0);
+    }
+  }
+
+  const series: RevenueDay[] = [];
+  const cursor = new Date(`${from}T00:00:00Z`);
+
+  for (let index = 0; index < days; index += 1) {
+    const date = cursor.toISOString().slice(0, 10);
+
+    series.push({
+      date,
+      // Weekday and day of month: enough to locate a bar without an axis.
+      label: new Intl.DateTimeFormat("en-NG", {
+        weekday: "short",
+        day: "numeric",
+        timeZone: "UTC",
+      }).format(cursor),
+      revenue: byDate.get(date) ?? 0,
+    });
+
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+
+  const half = Math.floor(days / 2);
+  const previous = series
+    .slice(0, half)
+    .reduce((sum, day) => sum + day.revenue, 0);
+  const current = series
+    .slice(half)
+    .reduce((sum, day) => sum + day.revenue, 0);
+
+  return {
+    days: series,
+    total: previous + current,
+    trendPercent:
+      previous === 0 ? null : ((current - previous) / previous) * 100,
+  };
 }

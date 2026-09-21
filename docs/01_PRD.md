@@ -325,7 +325,7 @@ RECEIPT(receipt_no, date, customer_name, customer_phone, staff_name,
 | Database | Supabase PostgreSQL | Managed Postgres with auth, RLS and a SQL editor — full SQL, no ORM lock-in |
 | Auth | Supabase Auth (email+password; Google OAuth optional) | JWT carries `auth.uid()`, which RLS policies read directly |
 | Data access | `@supabase/ssr` server client | Cookie-based session, safe in Server Components |
-| Charts | Recharts | Small, declarative, no canvas complexity |
+| Charts | **Hand-built inline SVG** (no chart library) | Recharts was the original choice and was never installed. One chart — the 14-day revenue bars — does not justify roughly 100 kB of dependency on the first screen of the application, and a charting library arrives with its own palette, its own type and its own spacing defaults, all of which would have to be overridden to reach §8.2. Drawing the bars directly means every colour is already a token and the whole chart is about 200 lines. The trade-off, stated plainly: a second or third chart with axes, legends and zoom would reverse this, and at that point the library earns its weight. |
 | Validation | Zod | One schema validates form input on both client and server |
 | Hosting | Vercel | Zero-config Next.js deployment, preview URLs for the demo |
 
