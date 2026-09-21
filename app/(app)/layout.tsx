@@ -4,6 +4,7 @@ import {
   Package,
   Receipt,
   Settings,
+  UserCog,
   Users,
 } from "lucide-react";
 import { redirect } from "next/navigation";
@@ -18,12 +19,23 @@ import { createClient } from "@/lib/supabase/server";
 // 1.5px stroke at 18px, per 02_CLAUDE.md section 2.
 const ICON_PROPS = { size: 18, strokeWidth: 1.5, "aria-hidden": true } as const;
 
+// Everyone sees these.
 const NAV_ITEMS = [
   { href: "/", label: "Dashboard", icon: <LayoutDashboard {...ICON_PROPS} /> },
   { href: "/inventory", label: "Inventory", icon: <Package {...ICON_PROPS} /> },
   { href: "/sales", label: "Sales", icon: <Receipt {...ICON_PROPS} /> },
   { href: "/customers", label: "Customers", icon: <Users {...ICON_PROPS} /> },
+];
+
+// Section 9.2 restricts these two. Hiding a link is a courtesy, not a control:
+// /reports redirects a staff member and /staff redirects anyone who is not an
+// owner, and 0017 refuses them again inside the database.
+const MANAGER_NAV_ITEMS = [
   { href: "/reports", label: "Reports", icon: <BarChart3 {...ICON_PROPS} /> },
+];
+
+const OWNER_NAV_ITEMS = [
+  { href: "/staff", label: "Staff", icon: <UserCog {...ICON_PROPS} /> },
   { href: "/settings", label: "Settings", icon: <Settings {...ICON_PROPS} /> },
 ];
 
@@ -62,7 +74,11 @@ export default async function AppLayout({ children }: AppLayoutProps) {
         </div>
 
         <nav aria-label="Main" className="flex flex-col gap-1 px-3">
-          {NAV_ITEMS.map((item) => (
+          {[
+            ...NAV_ITEMS,
+            ...(profile.role === "staff" ? [] : MANAGER_NAV_ITEMS),
+            ...(profile.role === "owner" ? OWNER_NAV_ITEMS : []),
+          ].map((item) => (
             <NavLink
               key={item.href}
               href={item.href}
