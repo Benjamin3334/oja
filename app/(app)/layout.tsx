@@ -10,6 +10,7 @@ import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { NavLink } from "@/components/app/nav-link";
+import { ThemeToggle } from "@/components/app/theme-toggle";
 import { signOut } from "@/lib/actions/auth";
 import { getCurrentProfile } from "@/lib/queries/profile";
 import { createClient } from "@/lib/supabase/server";
@@ -79,6 +80,8 @@ export default async function AppLayout({ children }: AppLayoutProps) {
           </span>
 
           <div className="flex items-center gap-4">
+            <ThemeToggle />
+
             <span className="text-caption text-ink-muted">
               {profile.fullName} &middot; {profile.role}
             </span>

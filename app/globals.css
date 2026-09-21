@@ -36,6 +36,9 @@
     --accent: #1B4D3E;
     --accent-hover: #163F33;
     --accent-soft: #E8F0EC;
+    /* What sits ON the accent. It is not always white: the dark theme
+       lightens the accent, and white on a light green fails contrast. */
+    --accent-ink: #FFFFFF;
 
     /* ---- Semantic -------------------------------------------------------- */
     --positive: #2F6F4E;
@@ -109,6 +112,84 @@
 }
 
 /* ============================================================================
+   DARK THEME
+   Only the literal values are restated. Every utility already resolves through
+   var(), so redefining the variables re-themes the whole application without
+   touching a single component.
+
+   The selectors are deliberate:
+     - the media query is the default, so the app follows the operating system
+       for anyone who never touches the toggle;
+     - :root:not([data-theme="light"]) lets an explicit LIGHT choice win over a
+       dark OS setting;
+     - :root[data-theme="dark"] lets an explicit DARK choice win over a light
+       OS setting.
+   Without the :not(), a user on a dark OS could not choose light.
+
+   This is not an inverted palette. Pure black on pure white inverted looks
+   harsh and loses the warmth the light theme is built on, so the dark canvas
+   keeps the same warm bias: a brown-black rather than a blue-black, and an
+   off-white ink rather than #FFF.
+   ============================================================================ */
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --canvas: #14130E;
+        --surface: #1C1B15;
+        --surface-sunk: #24231C;
+
+        --ink: #F2F0E9;
+        --ink-muted: #A8A69B;
+        --ink-faint: #76746A;
+
+        --hairline: #2E2D25;
+        --hairline-strong: #3D3B31;
+
+        /* Lightened so it reads as an accent against a dark canvas. The deep
+           green of the light theme is nearly invisible here. */
+        --accent: #6FBF9B;
+        --accent-hover: #8AD0B0;
+        --accent-soft: #1E3A30;
+        /* Dark text on the light accent. White would fail contrast. */
+        --accent-ink: #12211B;
+
+        --positive: #6FBF9B;
+        --warning: #D8A94B;
+        --danger: #E0736C;
+
+        /* Shadows do less on a dark surface, so the popover leans on a
+           stronger, tighter shade rather than a wide soft one. */
+        --e-popover: 0 8px 24px -8px rgb(0 0 0 / 0.55),
+                     0 2px 6px -2px rgb(0 0 0 / 0.4);
+    }
+}
+
+:root[data-theme="dark"] {
+    --canvas: #14130E;
+    --surface: #1C1B15;
+    --surface-sunk: #24231C;
+
+    --ink: #F2F0E9;
+    --ink-muted: #A8A69B;
+    --ink-faint: #76746A;
+
+    --hairline: #2E2D25;
+    --hairline-strong: #3D3B31;
+
+    --accent: #6FBF9B;
+    --accent-hover: #8AD0B0;
+    --accent-soft: #1E3A30;
+    --accent-ink: #12211B;
+
+    --positive: #6FBF9B;
+    --warning: #D8A94B;
+    --danger: #E0736C;
+
+    --e-popover: 0 8px 24px -8px rgb(0 0 0 / 0.55),
+                 0 2px 6px -2px rgb(0 0 0 / 0.4);
+}
+
+/* ============================================================================
    Expose the tokens to Tailwind. Every entry is a reference, never a literal.
    ============================================================================ */
 
@@ -125,6 +206,7 @@
     --color-accent: var(--accent);
     --color-accent-hover: var(--accent-hover);
     --color-accent-soft: var(--accent-soft);
+    --color-accent-ink: var(--accent-ink);
     --color-positive: var(--positive);
     --color-warning: var(--warning);
     --color-danger: var(--danger);

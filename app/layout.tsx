@@ -49,6 +49,33 @@ export default function RootLayout({ children }: RootLayoutProps) {
       lang="en"
       className={`${instrumentSerif.variable} ${geist.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
+      <head>
+        {/*
+          Applies the stored theme BEFORE the browser paints. Without this the
+          page renders in the light theme for one frame and then flips, which
+          is the flash of wrong theme every themed site gets wrong.
+
+          It has to be inline and synchronous - a React effect runs after paint,
+          and an external script would be a second round trip. Wrapped in
+          try/catch because localStorage throws in private browsing rather than
+          returning null, and a theme preference is not worth an error page.
+
+          "system" is stored as an explicit choice but sets no attribute, which
+          lets the prefers-color-scheme rule in globals.css take over.
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: [
+              "try{",
+              "var t=localStorage.getItem('oja-theme');",
+              "if(t==='light'||t==='dark'){",
+              "document.documentElement.setAttribute('data-theme',t)",
+              "}",
+              "}catch(e){}",
+            ].join(""),
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );

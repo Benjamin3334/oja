@@ -69,7 +69,7 @@ export function SignUpForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="h-[36px] rounded-sm bg-accent px-4 text-label text-white transition-quiet hover:bg-accent-hover disabled:opacity-60"
+        className="h-[36px] rounded-sm bg-accent px-4 text-label text-accent-ink transition-quiet hover:bg-accent-hover disabled:opacity-60"
       >
         {isPending ? "Creating account..." : "Create account"}
       </button>

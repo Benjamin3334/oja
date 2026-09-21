@@ -6,7 +6,9 @@ import type { AnchorHTMLAttributes, ButtonHTMLAttributes } from "react";
 type ButtonVariant = "primary" | "secondary" | "destructive";
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
-  primary: "bg-accent text-white hover:bg-accent-hover",
+  // text-accent-ink, not text-white: the dark theme lightens the accent, and
+  // white on a light green fails contrast. The token flips with the theme.
+  primary: "bg-accent text-accent-ink hover:bg-accent-hover",
   secondary: "bg-surface text-ink border border-hairline hover:bg-surface-sunk",
   destructive: "bg-surface text-danger border border-hairline hover:bg-surface-sunk",
 };
