@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { PASSWORD_MIN_LENGTH } from "@/lib/password-policy";
+
 // The single source of truth for the auth form rules.
 //
 // The client form and the Server Action both parse with these schemas, so the
@@ -12,7 +14,17 @@ import { z } from "zod";
 
 // Supabase hashes passwords with bcrypt, which ignores anything past 72 bytes,
 // so accepting more would silently mislead the user about what was stored.
-const PASSWORD_MIN_LENGTH = 8;
+//
+// LENGTH IS THE ONLY RULE THAT BLOCKS A SIGN-UP. Case, digit and symbol are
+// shown in the strength checklist as advice and are never enforced: NIST
+// SP 800-63B recommends against composition rules, because they push people
+// toward predictable substitutions (Password1!) without adding real entropy.
+//
+// The constant itself lives in lib/password-policy.ts, which imports nothing.
+// The strength meter needs it in the browser, and importing it from this
+// module would pull Zod into the client bundle. Re-exported here so there is
+// one definition and either import path works.
+export { PASSWORD_MIN_LENGTH };
 const PASSWORD_MAX_LENGTH = 72;
 const FULL_NAME_MIN_LENGTH = 2;
 const FULL_NAME_MAX_LENGTH = 120;

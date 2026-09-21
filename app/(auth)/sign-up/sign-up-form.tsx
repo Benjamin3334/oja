@@ -1,7 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
+import { PasswordInput } from "@/components/ui/password-input";
+import { PasswordStrength } from "@/components/ui/password-strength";
 import { signUp, type ActionResult } from "@/lib/actions/auth";
 
 export function SignUpForm() {
@@ -9,6 +11,11 @@ export function SignUpForm() {
     signUp,
     null
   );
+
+  // Controlled only so the meter can read what was typed. The value still
+  // reaches the Server Action through the form field, and the Server Action
+  // still parses it with Zod - the meter is guidance, never a gate.
+  const [password, setPassword] = useState("");
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
@@ -42,22 +49,20 @@ export function SignUpForm() {
         />
       </div>
 
-      <div className="flex flex-col gap-1">
-        <label htmlFor="password" className="text-label text-ink">
-          Password
-        </label>
-        <input
+      <div className="flex flex-col gap-2">
+        <PasswordInput
           id="password"
           name="password"
-          type="password"
+          label="Password"
           autoComplete="new-password"
           required
           disabled={isPending}
-          className="h-[36px] rounded-sm border border-hairline bg-surface px-3 text-body text-ink placeholder:text-ink-faint"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          aria-describedby="password-strength"
         />
-        <p id="password-hint" className="text-caption text-ink-muted">
-          At least 8 characters.
-        </p>
+
+        <PasswordStrength id="password-strength" value={password} />
       </div>
 
       <div aria-live="polite">
