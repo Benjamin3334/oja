@@ -683,6 +683,17 @@ export type Database = {
         Returns: Database["public"]["Enums"]["user_role"]
       }
       next_sale_reference: { Args: { p_org_id: string }; Returns: string }
+      set_member_active: {
+        Args: { p_active: boolean; p_member_id: string }
+        Returns: undefined
+      }
+      set_member_role: {
+        Args: {
+          p_member_id: string
+          p_role: Database["public"]["Enums"]["user_role"]
+        }
+        Returns: undefined
+      }
       void_sale: {
         Args: { p_reason: string; p_sale_id: string }
         Returns: undefined
