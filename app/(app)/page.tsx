@@ -5,6 +5,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
+import { getLowStock, getTopSellers } from "@/lib/queries/dashboard";
 import { getCurrentProfile } from "@/lib/queries/profile";
 import { getTodayFigures } from "@/lib/queries/sales";
 import { createClient } from "@/lib/supabase/server";
@@ -113,7 +114,11 @@ export default async function DashboardPage() {
   // Migration 0008 scopes sales by sold_by, so these figures are this
   // person takings for a staff member and the whole shop for an owner.
   // The caption below says which, rather than letting the number imply.
-  const figures = await getTodayFigures();
+  const [figures, lowStock, topSellers] = await Promise.all([
+    getTodayFigures(),
+    getLowStock(),
+    getTopSellers(),
+  ]);
   const isStaff = profile.role === "staff";
 
   return (
@@ -136,23 +141,80 @@ export default async function DashboardPage() {
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Panel title="Low stock">
-          <EmptyState
-            icon={<PackageSearch size={18} strokeWidth={1.5} aria-hidden="true" />}
-            headline="Nothing is running low."
-            body="There are no products yet, so there is no stock to watch. Add a product and set its reorder level to start tracking."
-            actionLabel="Add your first product"
-            actionHref="/inventory"
-          />
+          {lowStock.length === 0 ? (
+            <EmptyState
+              icon={<PackageSearch size={18} strokeWidth={1.5} aria-hidden="true" />}
+              headline="Nothing is running low."
+              body="Every product is above its reorder level. Set a reorder level on a product to have it watched here."
+              actionLabel="Go to inventory"
+              actionHref="/inventory"
+            />
+          ) : (
+            <ul className="flex flex-col divide-y divide-hairline">
+              {lowStock.map((item) => (
+                <li key={item.productId} className="py-3 first:pt-0 last:pb-0">
+                  <Link
+                    href={`/inventory/${item.productId}`}
+                    className="flex items-center justify-between gap-4"
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate text-body text-ink">
+                        {item.name}
+                      </span>
+                      <span className="block text-caption text-ink-faint">
+                        {item.sku}
+                      </span>
+                    </span>
+
+                    {/* The number that matters is how far below the line it
+                        is, so both are shown rather than a bare count. */}
+                    <span className="numeric shrink-0 text-right">
+                      <span className="block text-ink">{item.stockQuantity} left</span>
+                      <span className="block text-caption text-ink-muted">
+                        reorder at {item.reorderLevel}
+                      </span>
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
         </Panel>
 
-        <Panel title="Top sellers">
-          <EmptyState
-            icon={<TrendingUp size={18} strokeWidth={1.5} aria-hidden="true" />}
-            headline="No sales recorded yet."
-            body="Once you record a sale, the products earning the most over the last 30 days appear here."
-            actionLabel="Record your first sale"
-            actionHref="/sales"
-          />
+        <Panel title={isStaff ? "Your top sellers" : "Top sellers"}>
+          {topSellers.length === 0 ? (
+            <EmptyState
+              icon={<TrendingUp size={18} strokeWidth={1.5} aria-hidden="true" />}
+              headline="No sales in the last 30 days."
+              body="Once you record a sale, the products earning the most over the last 30 days appear here."
+              actionLabel="Record a sale"
+              actionHref="/sales/new"
+            />
+          ) : (
+            <ul className="flex flex-col divide-y divide-hairline">
+              {topSellers.map((item) => (
+                <li key={item.productId} className="py-3 first:pt-0 last:pb-0">
+                  <Link
+                    href={`/inventory/${item.productId}`}
+                    className="flex items-center justify-between gap-4"
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate text-body text-ink">
+                        {item.name}
+                      </span>
+                      <span className="block text-caption text-ink-faint">
+                        {item.unitsSold} sold
+                      </span>
+                    </span>
+
+                    <span className="numeric shrink-0 text-right text-ink">
+                      <Money amount={item.revenue} currency={currency} />
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
         </Panel>
       </div>
     </div>
