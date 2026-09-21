@@ -296,6 +296,16 @@
         -moz-osx-font-smoothing: grayscale;
     }
 
+    /* Edge on Windows adds its own eye and clear buttons inside password and
+       search fields. They sit on top of ours, so the field shows two eyes
+       that disagree about state, and the native one is not themed. Removing
+       them leaves exactly one control, which is the one this application can
+       label and make keyboard reachable. */
+    input::-ms-reveal,
+    input::-ms-clear {
+        display: none;
+    }
+
     /* Sections 8.4 and 5.3: every interactive element keeps a visible focus
        ring. Defined once here so no component has to remember it, and so that
        an `outline: none` anywhere downstream is an obvious mistake in review. */
