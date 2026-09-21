@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { OjaMark } from "@/components/app/oja-mark";
 import { LinkButton } from "@/components/ui/button";
 
 export const metadata: Metadata = {
@@ -18,9 +19,12 @@ export default function NotFound() {
   return (
     <main className="flex min-h-full flex-1 flex-col items-center justify-center bg-canvas px-6 py-16">
       <div className="enter-rise flex w-full max-w-[480px] flex-col items-center text-center">
-        {/* No logo file exists in public/, so the wordmark is set rather than
-            served. Geist at 600 matches the mark used in the app shell. */}
-        <span className="font-ui text-title font-semibold text-ink">Oja</span>
+        {/* The mark takes currentColor from text-ink, so it follows light and
+            dark without a second asset. Its accessible name is the sr-only
+            "Oja" the component carries. */}
+        <span className="text-ink">
+          <OjaMark size={40} />
+        </span>
 
         {/* The figure carries the page. Geist 700, tightened and set solid, in
             tabular figures so the three digits sit evenly rather than

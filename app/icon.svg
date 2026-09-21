@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2048 2048" width="2048" height="2048" role="img" aria-label="Oja">
+  <!--
+    The favicon. Same traced geometry as components/app/oja-mark.tsx, but with
+    fixed colours rather than currentColor: a favicon is rendered standalone by
+    the browser chrome, where there is no inherited text colour to take.
+
+    The two literals are the design tokens' own values - accent #1B4D3E as the
+    ground and canvas #FBFAF8 as the mark - so the icon matches the palette
+    rather than the JPEG's compressed approximation of it. They cannot be
+    var(--accent) here: this file is served on its own, outside the document
+    that defines the tokens.
+  -->
+  <mask id="cut" maskUnits="userSpaceOnUse" x="0" y="0" width="2048" height="2048">
+    <circle cx="1024" cy="1024" r="486" fill="#fff"/>
+    <ellipse cx="1024" cy="1024" rx="186" ry="412" fill="#000"/>
+    <rect x="1003.5" y="480" width="50" height="240" fill="#000" transform="rotate(15.6 1028.5 600)"/>
+    <rect x="987" y="1360" width="50" height="240" fill="#000" transform="rotate(15.6 1012 1480)"/>
+  </mask>
+
+  <rect width="2048" height="2048" fill="#1B4D3E"/>
+  <rect width="2048" height="2048" fill="#FBFAF8" mask="url(#cut)"/>
+</svg>
