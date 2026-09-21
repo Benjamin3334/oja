@@ -4,6 +4,12 @@ interface OjaMarkProps {
   // aria-hidden either way; this drops the sr-only label as well, so a screen
   // reader does not announce "Oja Oja".
   decorative?: boolean;
+  // "mono" is the mark alone in currentColor, which takes --ink and follows
+  // the theme - right where the mark stands in for the name, as on the 404.
+  // "brand" is the tile the favicon serves: the mark reversed out of the
+  // brand green, in colours that do NOT flip with the theme, because a logo
+  // keeps its colours.
+  variant?: "mono" | "brand";
   // Only needed when a single page renders the mark twice. The geometry is
   // identical so sharing one mask would still render correctly, but duplicate
   // element ids are invalid, so a second instance should pass its own.
@@ -37,6 +43,7 @@ interface OjaMarkProps {
 export function OjaMark({
   size = 40,
   decorative = false,
+  variant = "mono",
   id = "oja-mark",
 }: OjaMarkProps) {
   const maskId = `${id}-cut`;
@@ -84,14 +91,30 @@ export function OjaMark({
           />
         </mask>
 
-        {/* currentColor, so the mark takes --ink from whatever contains it and
-            follows light and dark without a second asset. */}
-        <rect
-          width="2048"
-          height="2048"
-          fill="currentColor"
-          mask={`url(#${maskId})`}
-        />
+        {variant === "brand" ? (
+          <>
+            {/* The same tile as app/icon.svg: the mark reversed out of the
+                brand green. Both colours come from tokens that the dark theme
+                deliberately does not redefine, so this looks identical in
+                either mode - which is what makes it recognisable. */}
+            <rect width="2048" height="2048" fill="var(--brand-ground)" />
+            <rect
+              width="2048"
+              height="2048"
+              fill="var(--brand-mark)"
+              mask={`url(#${maskId})`}
+            />
+          </>
+        ) : (
+          /* currentColor, so the mark takes --ink from whatever contains it
+             and follows light and dark without a second asset. */
+          <rect
+            width="2048"
+            height="2048"
+            fill="currentColor"
+            mask={`url(#${maskId})`}
+          />
+        )}
       </svg>
 
       {decorative ? null : <span className="sr-only">Oja</span>}

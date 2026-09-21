@@ -200,8 +200,8 @@ export function AppShell({
                 x-height band runs from about 10.4px to 20px, so its centre is
                 near 15.2px while the line box centre is 14px. The mark is
                 nudged down the difference, rounded to 1px. */}
-            <span className="shrink-0 translate-y-[1px] text-ink">
-              <OjaMark size={20} decorative />
+            <span className="shrink-0 translate-y-[1px] overflow-hidden rounded-sm">
+              <OjaMark size={20} decorative variant="brand" />
             </span>
 
             <span className="font-display text-title text-ink">Oja</span>

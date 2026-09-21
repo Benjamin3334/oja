@@ -40,6 +40,15 @@
        lightens the accent, and white on a light green fails contrast. */
     --accent-ink: #FFFFFF;
 
+    /* ---- The mark's own colours -------------------------------------------
+            Deliberately NOT redefined in the dark theme below. A logo keeps
+            its colours: this is the same artwork app/icon.svg serves as the
+            favicon, and a brand tile that inverted with the theme would stop
+            being the thing people recognise. Every other colour in this file
+            flips; these two do not, and that is the point. ---------------- */
+    --brand-ground: #1B4D3E;
+    --brand-mark: #FBFAF8;
+
     /* ---- Semantic -------------------------------------------------------- */
     --positive: #2F6F4E;
     --warning: #9A6B12;
