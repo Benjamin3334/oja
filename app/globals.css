@@ -335,6 +335,28 @@
     font-variant-numeric: tabular-nums;
 }
 
+/* A single entrance: fade plus a 2px rise, at the motion token. Section 8.1
+   allows transform and opacity only, and this uses exactly those two.
+
+   prefers-reduced-motion needs no special case here. The base layer above
+   already forces animation-duration to 1ms for every element, so the content
+   simply arrives rather than moving. That is the point of putting the rule
+   once at the top rather than per component. */
+@keyframes enter-rise {
+    from {
+        opacity: 0;
+        transform: translateY(2px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@utility enter-rise {
+    animation: enter-rise var(--dur) var(--ease) both;
+}
+
 /* Section 8.1: "Motion only on state change, 160 ms, transform/opacity only."
    The property list is part of the rule, not a default to be overridden. */
 @utility transition-quiet {

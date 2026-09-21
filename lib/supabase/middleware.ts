@@ -3,6 +3,36 @@ import type { Database } from "@/types/database.types";
 import { NextResponse, type NextRequest } from "next/server";
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "./env";
 
+// The sections of the application that require a session. Anything outside
+// this list is left to Next to route, which is what lets an unmatched URL
+// reach app/not-found.tsx and return a real 404 instead of being redirected to
+// the sign-in page with a 307.
+//
+// This list is NOT the access control. app/(app)/layout.tsx re-checks the
+// session and redirects on its own, so a protected route left out of this list
+// by mistake is still refused - it just costs a render to find out. The
+// middleware is the session refresh plus a courtesy redirect; the layout is
+// the gate (PRD section 9.1, principle 3).
+const PROTECTED_PREFIXES = [
+  "/inventory",
+  "/sales",
+  "/customers",
+  "/reports",
+  "/settings",
+  "/staff",
+  "/onboarding",
+];
+
+function requiresSession(pathname: string): boolean {
+  if (pathname === "/") {
+    return true;
+  }
+
+  return PROTECTED_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  );
+}
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -48,12 +78,16 @@ export async function updateSession(request: NextRequest) {
 
   const user = data?.claims;
 
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith("/sign-in") &&
-    !request.nextUrl.pathname.startsWith("/sign-up")
-  ) {
-    // no user, potentially respond by redirecting the user to the login page
+  // Previously this redirected EVERY unauthenticated path that was not
+  // /sign-in or /sign-up, which meant a mistyped URL never reached the router:
+  // /does-not-exist answered 307 to the sign-in page rather than 404. Scoping
+  // the redirect to real sections fixes that without weakening anything,
+  // because the layout gate is what actually refuses access.
+  //
+  // An unknown path UNDER a protected prefix, such as /inventory/nonsense,
+  // still redirects when signed out. That is deliberate: a signed-out stranger
+  // learns nothing about which routes exist.
+  if (!user && requiresSession(request.nextUrl.pathname)) {
     const url = request.nextUrl.clone();
     url.pathname = "/sign-in";
     return NextResponse.redirect(url);
