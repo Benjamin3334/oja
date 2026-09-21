@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/types/database.types";
 
@@ -24,7 +26,16 @@ export interface CurrentProfile {
   };
 }
 
-export async function getCurrentProfile(
+// Wrapped in React cache(). The app shell layout needs the profile to render
+// the sidebar, and the page inside it needs the same profile to decide what the
+// signed-in user may see - but a layout cannot pass props to a page, so both
+// ask independently. Without this, every authenticated page made the same
+// query to Supabase twice, over the network, on every navigation.
+//
+// cache() memoises for the duration of ONE server render pass, so the layout
+// and the page share a single result. It is not a cross-request cache: a new
+// request re-reads, which is what a permission check has to do.
+export const getCurrentProfile = cache(async function getCurrentProfile(
   userId: string
 ): Promise<CurrentProfile | null> {
   const supabase = await createClient();
@@ -62,12 +73,12 @@ export async function getCurrentProfile(
       currency: data.organisations.currency,
     },
   };
-}
+});
 
 // Convenience for Server Components and Server Actions that need the signed-in
 // user's profile and do not already hold the user id. Verifies the token rather
 // than reading the cookie, the same way the shell guard does.
-export async function getSignedInProfile(): Promise<CurrentProfile | null> {
+export const getSignedInProfile = cache(async function getSignedInProfile(): Promise<CurrentProfile | null> {
   const supabase = await createClient();
 
   const { data } = await supabase.auth.getClaims();
@@ -78,7 +89,7 @@ export async function getSignedInProfile(): Promise<CurrentProfile | null> {
   }
 
   return getCurrentProfile(userId);
-}
+});
 
 // PRD section 9.2: creating and editing products, receiving stock and making
 // adjustments are owner and manager only. Staff read inventory, because they
