@@ -1,5 +1,9 @@
 interface OjaMarkProps {
   size?: number;
+  // True where the word "Oja" is already written beside the mark. The svg is
+  // aria-hidden either way; this drops the sr-only label as well, so a screen
+  // reader does not announce "Oja Oja".
+  decorative?: boolean;
   // Only needed when a single page renders the mark twice. The geometry is
   // identical so sharing one mask would still render correctly, but duplicate
   // element ids are invalid, so a second instance should pass its own.
@@ -30,7 +34,11 @@ interface OjaMarkProps {
 //
 // It is a redraw, not a vectorisation. If an official vector of this mark ever
 // turns up, that one should replace this.
-export function OjaMark({ size = 40, id = "oja-mark" }: OjaMarkProps) {
+export function OjaMark({
+  size = 40,
+  decorative = false,
+  id = "oja-mark",
+}: OjaMarkProps) {
   const maskId = `${id}-cut`;
 
   return (
@@ -86,7 +94,7 @@ export function OjaMark({ size = 40, id = "oja-mark" }: OjaMarkProps) {
         />
       </svg>
 
-      <span className="sr-only">Oja</span>
+      {decorative ? null : <span className="sr-only">Oja</span>}
     </span>
   );
 }

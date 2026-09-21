@@ -1,6 +1,8 @@
 "use client";
 
 import { PanelLeft } from "lucide-react";
+
+import { OjaMark } from "@/components/app/oja-mark";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -181,16 +183,28 @@ export function AppShell({
             <PanelLeft size={18} strokeWidth={1.5} aria-hidden="true" />
           </button>
 
-          {/* Fades rather than squashing: the aside clips it as the width
-              shrinks, so the letterforms never compress. */}
+          {/* The mark and the name fade together as one group, so they
+              cannot drift apart mid-transition. The aside clips them as the
+              width shrinks; nothing is unmounted and nothing is re-laid-out,
+              which is the same rule the nav icons follow. The toggle above is
+              outside this span and therefore never moves. */}
           <span
             className={[
-              "whitespace-nowrap font-display text-title text-ink",
+              "flex items-center gap-2 whitespace-nowrap",
               "transition-opacity duration-[var(--dur)] ease-[var(--ease)]",
               isExpanded ? "opacity-100" : "opacity-0",
             ].join(" ")}
           >
-            Oja
+            {/* Optically centred on the name's x-height rather than its line
+                box. At 20px in a 28px line the baseline sits 20px down, the
+                x-height band runs from about 10.4px to 20px, so its centre is
+                near 15.2px while the line box centre is 14px. The mark is
+                nudged down the difference, rounded to 1px. */}
+            <span className="shrink-0 translate-y-[1px] text-ink">
+              <OjaMark size={20} decorative />
+            </span>
+
+            <span className="font-display text-title text-ink">Oja</span>
           </span>
         </div>
 
