@@ -49,3 +49,7 @@ env*.local
 
 # Supabase CLI scratch state (project ref, linked-project metadata).
 supabase/.temp/
+
+# Reference PDFs kept beside the project but not published.
+Documentation.pdf
+Study.pdf

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
+import { getExchangeRates } from "@/lib/queries/exchange-rates";
 import { getSignedInProfile } from "@/lib/queries/profile";
 
 import { SettingsForm } from "./settings-form";
@@ -24,6 +25,11 @@ export default async function SettingsPage() {
     redirect("/");
   }
 
+  // Fetched once here, for every currency at once, so choosing one in the
+  // select shows its rate instantly with no second request and no spinner.
+  // Null when the rate service is unreachable; the form copes.
+  const rates = await getExchangeRates(profile.organisation.currency);
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -36,6 +42,7 @@ export default async function SettingsPage() {
       <SettingsForm
         name={profile.organisation.name}
         currency={profile.organisation.currency}
+        rates={rates}
       />
     </div>
   );

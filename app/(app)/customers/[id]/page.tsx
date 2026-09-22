@@ -103,7 +103,9 @@ export default async function CustomerPage({ params }: CustomerPageProps) {
             <p className="mt-1 text-caption text-ink-muted">
               {isStaff
                 ? "From the sales you recorded."
-                : `${customer.saleCount} completed sales.`}
+                : `${customer.saleCount} completed ${
+                    customer.saleCount === 1 ? "purchase" : "purchases"
+                  }.`}
             </p>
           </div>
         </div>

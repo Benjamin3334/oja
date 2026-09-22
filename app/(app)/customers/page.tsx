@@ -58,7 +58,11 @@ export default async function CustomersPage() {
         <THead>
           <Th>Name</Th>
           <Th>Phone</Th>
-          <Th numeric>Sales</Th>
+          {/* "Purchases", not "Sales": from the shop's side a sale is
+              something the shop made, and the column sat beside a customer's
+              name as though they had made it. The number is the same; the
+              word describes it from the reader's point of view. */}
+          <Th numeric>Purchases</Th>
           <Th numeric>{isStaff ? "Spend with you" : "Lifetime spend"}</Th>
         </THead>
         <TBody>
